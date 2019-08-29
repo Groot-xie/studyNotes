@@ -1,0 +1,1342 @@
+# Symbol
+
+### 概述
+
+1.  ES6 引入了一种新的原始***数据类型`Symbol`***，表示***独一无二***的值。它是 JavaScript 语言的第七种数据类型
+
+2. Symbol 值通过`Symbol`函数生成。这就是说，对象的属性名现在可以有两种类型，一种是原来就有的字符串，另一种就是新增的 Symbol 类型。
+
+   ```js
+   let s = Symbol();
+   
+   typeof s
+   // "symbol"
+   ```
+
+   注意，***`Symbol`函数前不能使用`new`命令***，否则会报错。这是因为生成的 Symbol 是一个原始类型的值，不是对象。也就是说，由于 Symbol 值不是对象，所以不能添加属性。基本上，它是一种类似于字符串的数据类型.
+
+3.  `Symbol`函数可以接受一个字符串作为参数，表示对 Symbol 实例的***描述***，主要是为了在控制台显示，或者转为字符串时，比较容易区分。
+
+   ```js
+   let s1 = Symbol('foo');
+   let s2 = Symbol('bar');
+   
+   s1 // Symbol(foo)
+   s2 // Symbol(bar)
+   
+   s1.toString() // "Symbol(foo)"
+   s2.toString() // "Symbol(bar)"
+   ```
+
+4. Symbol 值***不能与其他类型的值进行运算***，会报错.
+
+5. Symbol 值***可以显式转为字符串***。
+
+   ```js
+   let sym = Symbol('My symbol');
+   
+   String(sym) // 'Symbol(My symbol)'
+   sym.toString() // 'Symbol(My symbol)'
+   ```
+
+6. Symbol 值也***可以转为布尔值，但是不能转为数值***。
+
+   ```js
+   let sym = Symbol();
+   Boolean(sym) // true
+   !sym  // false
+   
+   if (sym) {
+     // ...
+   }
+   
+   Number(sym) // TypeError
+   sym + 2 // TypeError
+   ```
+
+### 作为属性名的 Symbol
+
+1. 由于每一个 Symbol 值都是不相等的，这意味着 Symbol 值可以作为标识符，用于对象的属性名，就能***保证不会出现同名的属性***。
+
+   ```js
+   let mySymbol = Symbol();
+   
+   // 第一种写法
+   let a = {};
+   a[mySymbol] = 'Hello!';
+   
+   // 第二种写法
+   // 在对象的内部，使用 Symbol 值定义属性时，Symbol 值必须放在方括号之中。
+   // 如果mySymbol不放在方括号中，该属性的键名就是字符串mySymbol，而不是mySymbol所代表的那个 Symbol 值。
+   let a = {
+     [mySymbol]: 'Hello!'
+   };
+   
+   // 第三种写法
+   let a = {};
+   Object.defineProperty(a, mySymbol, { value: 'Hello!' });
+   
+   // 以上写法都得到同样结果
+   a[mySymbol] // "Hello!"
+   ```
+
+   注意，***Symbol 值作为对象属性名时，不能用点运算符。***
+
+### 属性名遍历
+
+1. Symbol 作为属性名，***该属性不会出现在`for...in`、`for...of`循环中，也不会被`Object.keys()`、`Object.getOwnPropertyNames()`、`JSON.stringify()`返回。***但是，它也不是私有属性，有一个***`Object.getOwnPropertySymbols`***方法，可以获取指定对象的所有 Symbol 属性名。
+
+   ```js
+   // Object.getOwnPropertySymbols方法返回一个数组，成员是当前对象的所有用作属性名的 Symbol 值。
+   const obj = {};
+   let a = Symbol('a');
+   let b = Symbol('b');
+   
+   obj[a] = 'Hello';
+   obj[b] = 'World';
+   
+   const objectSymbols = Object.getOwnPropertySymbols(obj);
+   
+   objectSymbols
+   // [Symbol(a), Symbol(b)]
+   ```
+
+2. ***`Reflect.ownKeys`***方法可以返回所有类型的键名，包括常规键名和 Symbol 键名。
+
+   ```js
+   let obj = {
+     [Symbol('my_key')]: 1,
+     enum: 2,
+     nonEnum: 3
+   };
+   
+   Reflect.ownKeys(obj)
+   //  ["enum", "nonEnum", Symbol(my_key)]
+   ```
+
+
+### Symbol.for()，Symbol.keyFor()
+
+1. 我们希望重新***使用同一个 Symbol 值***，***`Symbol.for`***方法可以做到这一点。它接受一个字符串作为参数，然后搜索有没有以该参数作为名称的 Symbol 值。如果有，就返回这个 Symbol 值，否则就新建并返回一个以该字符串为名称的 Symbol 值。
+
+   ```js
+   let s1 = Symbol.for('foo');
+   let s2 = Symbol.for('foo');
+   
+   // s1和s2都是 Symbol 值，但是它们都是同样参数的Symbol.for方法生成的，所以实际上是同一个值。
+   s1 === s2 // true
+   ```
+
+   `Symbol.for()`与`Symbol()`这两种写法，都会生成新的 Symbol。它们的区别是，前者会被登记在全局环境中供搜索，后者不会。`Symbol.for()`不会每次调用就返回一个新的 Symbol 类型的值，而是会先检查给定的`key`是否已经存在，如果不存在才会新建一个值。
+
+   ```js
+   Symbol.for("bar") === Symbol.for("bar")
+   // true
+   
+   Symbol("bar") === Symbol("bar")
+   // false
+   ```
+
+   ***`Symbol()`写法没有登记机制，所以每次调用都会返回一个不同的值。***
+
+---
+
+1. ***`Symbol.keyFor`***方法返回一个已登记的 Symbol 类型值的`key`。
+
+   ```js
+   let s1 = Symbol.for("foo");
+   Symbol.keyFor(s1) // "foo"
+   
+   let s2 = Symbol("foo");
+   Symbol.keyFor(s2) // undefined
+   ```
+
+   变量`s2`属于未登记的 Symbol 值，所以返回`undefined`。
+
+# Generator 函数的语法
+
+### 概述
+
+Generator 函数是 ES6 提供的一种异步编程解决方案，Generator 函数是一个状态机，封装了多个内部状态。
+
+1. `function`关键字与函数名之间有一个星号
+
+2. 函数体内部使用`yield`表达式，定义不同的内部状态（`yield`在英语里的意思就是“产出”）
+
+   ```js
+   function* helloWorldGenerator() {
+     yield 'hello';
+     yield 'world';
+     return 'ending';
+   }
+   // Generator 函数的调用方法与普通函数一样，也是在函数名后面加上一对圆括号,调用 Generator 函数后，该函数并不执行，返回的也不是函数运行结果，而是一个指向内部状态的指针对象
+   var hw = helloWorldGenerator();
+   
+   // 必须调用遍历器对象的next方法，使得指针移向下一个状态。也就是说，每次调用next方法，内部指针就从函数头部或上一次停下来的地方开始执行，直到遇到下一个yield表达式（或return语句）为止。换言之，Generator 函数是分段执行的，yield表达式是暂停执行的标记，而next方法可以恢复执行。
+   hw.next()
+   // { value: 'hello', done: false }
+   
+   hw.next()
+   // { value: 'world', done: false }
+   
+   hw.next()
+   // { value: 'ending', done: true }
+   
+   hw.next()
+   // { value: undefined, done: true }
+   ```
+
+
+### yield 表达式
+
+由于 Generator 函数返回的遍历器对象，***只有调用`next`方法才会遍历下一个内部状态，***所以其实提供了一种可以暂停执行的函数。***`yield`表达式就是暂停标志。***
+
+遍历器对象的`next`方法的运行逻辑如下。
+
+1. 遇到`yield`表达式，就暂停执行后面的操作，并将紧跟在`yield`后面的那个表达式的值，作为返回的对象的`value`属性值。
+2. 下一次调用`next`方法时，再继续往下执行，直到遇到下一个`yield`表达式。
+3. 如果没有再遇到新的`yield`表达式，就一直运行到函数结束，直到`return`语句为止，并将`return`语句后面的表达式的值，作为返回的对象的`value`属性值。
+4. 如果该函数没有`return`语句，则返回的对象的`value`属性值为`undefined`。
+
+`yield`表达式与`return`语句既有相似之处，也有区别。相似之处在于，***都能返回紧跟在语句后面的那个表达式的值***。***区别在于每次遇到`yield`，函数暂停执行，下一次再从该位置继续向后执行，而`return`语句不具备位置记忆的功能***。一个函数里面，只能执行一次（或者说一个）`return`语句，但是可以执行多次（或者说多个）`yield`表达式。正常函数只能返回一个值，因为只能执行一次`return`；Generator 函数可以返回一系列的值，因为可以有任意多个`yield`。从另一个角度看，也可以说 Generator 生成了一系列的值，这也就是它的名称的来历（英语中，generator 这个词是“生成器”的意思）。
+
+***`yield`表达式只能用在 Generator 函数里面，用在其他地方都会报错。***
+
+1. `yield`表达式如果用在另一个表达式之中，必须放在圆括号里面。
+
+   ```js
+   function* demo() {
+     console.log('Hello' + yield); // SyntaxError
+     console.log('Hello' + yield 123); // SyntaxError
+   
+     console.log('Hello' + (yield)); // OK
+     console.log('Hello' + (yield 123)); // OK
+   }
+   ```
+
+
+2. `yield`表达式用作函数参数或放在赋值表达式的右边，可以不加括号。
+
+   ```js
+   function* demo() {
+     foo(yield 'a', yield 'b'); // OK
+     let input = yield; // OK
+   }
+   ```
+
+
+### next 方法的参数
+
+***`yield`表达式本身没有返回值，或者说总是返回`undefined`***。`next`方法可以带一个参数，该参数就会被当作上一个`yield`表达式的返回值。
+
+```js
+function* f() {
+  for(var i = 0; true; i++) {
+    var reset = yield i;
+    if(reset) { i = -1; }
+  }
+}
+
+var g = f();
+
+g.next() // { value: 0, done: false }
+g.next() // { value: 1, done: false }
+g.next(true) // { value: 0, done: false }
+```
+
+上面代码先定义了一个可以无限运行的 Generator 函数`f`，如果`next`方法没有参数，每次运行到`yield`表达式，变量`reset`的值总是`undefined`。***当`next`方法带一个参数`true`时，变量`reset`就被重置为这个参数（即`true`）***，因此`i`会等于`-1`，下一轮循环就会从`-1`开始递增。
+
+这个功能有很重要的语法意义。Generator 函数从暂停状态到恢复运行，它的上下文状态（context）是不变的。***通过`next`方法的参数，就有办法在 Generator 函数开始运行之后，继续向函数体内部注入值。***也就是说，可以在 Generator 函数运行的不同阶段，从外部向内部注入不同的值，从而调整函数行为
+
+```js
+function* foo(x) {
+  var y = 2 * (yield (x + 1));
+  var z = yield (y / 3);
+  return (x + y + z);
+}
+
+var a = foo(5);
+a.next() // Object{value:6, done:false}
+a.next() // Object{value:NaN, done:false}
+a.next() // Object{value:NaN, done:true}
+
+var b = foo(5);
+b.next() // { value:6, done:false }
+b.next(12) // { value:8, done:false }
+b.next(13) // { value:42, done:true }
+```
+
+注意，由于`next`方法的参数表示上一个`yield`表达式的返回值，所以在第一次使用`next`方法时，传递参数是无效的。V8 引擎直接忽略第一次使用`next`方法时的参数，只有从第二次使用`next`方法开始，参数才是有效的。从语义上讲，第一个`next`方法用来启动遍历器对象，所以不用带有参数。
+
+```js
+function* dataConsumer() {
+  console.log('Started');
+  console.log(`1. ${yield}`);
+  console.log(`2. ${yield}`);
+  return 'result';
+}
+
+let genObj = dataConsumer();
+genObj.next();
+// Started
+genObj.next('a')
+// 1. a
+genObj.next('b')
+// 2. b
+```
+
+### for...of 循环
+
+1. `for...of`循环可以自动遍历 Generator 函数时生成的`Iterator`对象，且此时不再需要调用`next`方法。
+
+   ```js
+   function* foo() {
+     yield 1;
+     yield 2;
+     yield 3;
+     yield 4;
+     yield 5;
+     return 6;
+   }
+   
+   for (let v of foo()) {
+     console.log(v);
+   }
+   // 1 2 3 4 5
+   ```
+
+   上面代码使用`for...of`循环，依次显示 5 个`yield`表达式的值。这里需要注意，一旦`next`方法的返回对象的`done`属性为`true`，`for...of`循环就会中止，且***不包含该返回对象***，所以上面代码的`return`语句返回的`6`，不包括在`for...of`循环之中。
+
+### Generator.prototype.return()
+
+```js
+function* gen() {
+  yield 1;
+  yield 2;
+  yield 3;
+}
+
+var g = gen();
+
+g.next()        // { value: 1, done: false }
+g.return('foo') // { value: "foo", done: true }
+g.next()        // { value: undefined, done: true }
+```
+
+### next()  throw()  return() 的共同点
+
+`next()`、`throw()`、`return()`这三个方法本质上是同一件事，可以放在一起理解。***它们的作用都是让 Generator 函数恢复执行，并且使用不同的语句替换`yield`表达式。***
+
+1. `next()`是将`yield`表达式替换成一个值。
+
+   ```js
+   const g = function* (x, y) {
+     let result = yield x + y;
+     return result;
+   };
+   
+   const gen = g(1, 2);
+   gen.next(); // Object {value: 3, done: false}
+   
+   gen.next(1); // Object {value: 1, done: true}
+   // 相当于将 let result = yield x + y
+   // 替换成 let result = 1;
+   ```
+
+2. `throw()`是将`yield`表达式替换成一个`throw`语句。
+
+   ```js
+   gen.throw(new Error('出错了')); // Uncaught Error: 出错了
+   // 相当于将 let result = yield x + y
+   // 替换成 let result = throw(new Error('出错了'));
+   ```
+
+3. `return()`是将`yield`表达式替换成一个`return`语句。
+
+   ```js
+   gen.return(2); // Object {value: 2, done: true}
+   // 相当于将 let result = yield x + y
+   // 替换成 let result = return 2;
+   ```
+
+
+### yield*   表达式
+
+如果在 Generator 函数内部，调用另一个 Generator 函数，默认情况下是没有效果的。
+
+```js
+function* foo() {
+  yield 'a';
+  yield 'b';
+}
+
+function* bar() {
+  yield 'x';
+  foo();
+  yield 'y';
+}
+
+for (let v of bar()){
+  console.log(v);
+}
+// "x"
+// "y"
+```
+
+这个就需要用到`yield*`表达式，用来在一个 Generator 函数里面执行另一个 Generator 函数。
+
+```js
+function* bar() {
+  yield 'x';
+  yield* foo();
+  yield 'y';
+}
+
+// 等同于
+function* bar() {
+  yield 'x';
+  yield 'a';
+  yield 'b';
+  yield 'y';
+}
+
+// 等同于
+function* bar() {
+  yield 'x';
+  for (let v of foo()) {
+    yield v;
+  }
+  yield 'y';
+}
+
+for (let v of bar()){
+  console.log(v);
+}
+// "x"
+// "a"
+// "b"
+// "y"
+```
+
+
+
+#  Reflect
+
+### 概述
+
+1. `Reflect`是 ES6 为了***操作对象***而提供的新 API。
+
+   + 目的
+
+     + 将`Object`对象的一些明显属于语言内部的方法（比如`Object.defineProperty`），放到`Reflect`对象上。
+
+     + 修改某些`Object`方法的***返回结果***，让其变得更合理。比如，`Object.defineProperty(obj, name, desc)`在无法定义属性时，会抛出一个错误，而`Reflect.defineProperty(obj, name, desc)`则会返回`false`。
+
+       ```js
+       // 老写法
+       try {
+         Object.defineProperty(target, property, attributes);
+         // success
+       } catch (e) {
+         // failure
+       }
+       
+       // 新写法
+       if (Reflect.defineProperty(target, property, attributes)) {
+         // success
+       } else {
+         // failure
+       }
+       ```
+
+
+     + 让`Object`操作都变成函数行为。某些`Object`操作是命令式，比如`name in obj`和`delete obj[name]`，而`Reflect.has(obj, name)`和`Reflect.deleteProperty(obj, name)`让它们变成了函数行为。
+    
+       ```js
+       // 老写法
+       'assign' in Object // true
+       
+       // 新写法
+       Reflect.has(Object, 'assign') // true
+       ```
+    
+     + `Reflect`对象的方法与`Proxy`对象的方法一一对应，只要是`Proxy`对象的方法，就能在`Reflect`对象上找到对应的方法。这就让`Proxy`对象可以方便地调用对应的`Reflect`方法，完成默认行为，作为修改行为的基础
+
+### 静态方法（未具体列出详情的，详见官网）
+
+- Reflect.apply(target, thisArg, args)
+
+- Reflect.construct(target, args)
+
+- Reflect.get(target, name, receiver)
+
+- Reflect.set(target, name, value, receiver)
+
+- Reflect.defineProperty(target, name, desc)
+
+  `Reflect.defineProperty`方法基本等同于`Object.defineProperty`，用来为对象定义属性。未来，后者会被逐渐废除，请从现在开始就使用`Reflect.defineProperty`代替它。
+
+  ```js
+  function MyDate() {
+    /*…*/
+  }
+  
+  // 旧写法
+  Object.defineProperty(MyDate, 'now', {
+    value: () => Date.now()
+  });
+  
+  // 新写法
+  Reflect.defineProperty(MyDate, 'now', {
+    value: () => Date.now()
+  });
+  ```
+
+- Reflect.deleteProperty(target, name)
+
+  `Reflect.deleteProperty`方法等同于`delete obj[name]`，用于删除对象的属性。
+
+  ```js
+  const myObj = { foo: 'bar' };
+  
+  // 旧写法
+  delete myObj.foo;
+  
+  // 新写法
+  Reflect.deleteProperty(myObj, 'foo');
+  ```
+
+  该方法返回一个布尔值。如果删除成功，或者被删除的属性不存在，返回`true`；删除失败，被删除的属性依然存在，返回`false`。
+
+- Reflect.has(target, name)
+
+  `Reflect.has`方法对应`name in obj`里面的`in`运算符。
+
+  ```js
+  var myObject = {
+    foo: 1,
+  };
+  
+  // 旧写法
+  'foo' in myObject // true
+  
+  // 新写法
+  Reflect.has(myObject, 'foo') // true
+  ```
+
+- Reflect.ownKeys(target)
+
+  `Reflect.ownKeys`方法用于返回对象的所有属性，基本等同于`Object.getOwnPropertyNames`与`Object.getOwnPropertySymbols`之和。
+
+  ```js
+  var myObject = {
+    foo: 1,
+    bar: 2,
+    [Symbol.for('baz')]: 3,
+    [Symbol.for('bing')]: 4,
+  };
+  
+  // 旧写法
+  Object.getOwnPropertyNames(myObject)
+  // ['foo', 'bar']
+  
+  Object.getOwnPropertySymbols(myObject)
+  //[Symbol(baz), Symbol(bing)]
+  
+  // 新写法
+  Reflect.ownKeys(myObject)
+  // ['foo', 'bar', Symbol(baz), Symbol(bing)]
+  ```
+
+- Reflect.isExtensible(target)
+
+- Reflect.preventExtensions(target)
+
+- Reflect.getOwnPropertyDescriptor(target, name)
+
+- Reflect.getPrototypeOf(target)
+
+- Reflect.setPrototypeOf(target, prototype)
+
+
+
+
+
+# Set 和 Map 的数据结构
+
+## set
+
+### 基本用法
+
+- ES6 提供了新的数据结构 Set。它类似于数组，但是成员的***值都是唯一的，没有重复的值***。`Set`本身是一个构造函数，用来生成 Set 数据结构。
+
+  ```js
+  const s = new Set();
+  ```
+
++ `Set`函数可以接受一个数组（或者具有 iterable 接口的其他数据结构）作为参数，用来初始化。
+
+  ```js
+  // 例一
+  const set = new Set([1, 2, 3, 4, 4]);
+  [...set]
+  // [1, 2, 3, 4]
+  
+  // 去除数组的重复成员
+  [...new Set(array)]
+  
+  // 去除字符串里面的重复字符
+  [...new Set('ababbc')].join('')
+  // "abc"
+  ```
+
++ `Array.from`方法可以将 Set 结构转为数组。
+
+  ```js
+  // 这就提供了去除数组重复成员的一种方法。
+  function dedupe(array) {
+    return Array.from(new Set(array));
+  }
+  
+  dedupe([1, 1, 2, 3]) // [1, 2, 3]
+  ```
+
+
+### Set 实例的属性和方法
+
+1. Set 结构的实例有以下***属性***。
+
+   - `Set.prototype.constructor`：构造函数，默认就是`Set`函数。
+   - `Set.prototype.size`：返回`Set`实例的成员总数。
+
+2. Set 结构的实例的操作***方法***（用于操作数据）
+
+   - `add(value)`：添加某个值，返回 Set 结构本身。
+   - `delete(value)`：删除某个值，返回一个布尔值，表示删除是否成功。
+   - `has(value)`：返回一个布尔值，表示该值是否为`Set`的成员。
+   - `clear()`：清除所有成员，没有返回值。
+
+3. Set 结构的实例***遍历方法***，可以用于遍历成员。
+
+   - `keys()`：返回键名的遍历器
+   - `values()`：返回键值的遍历器
+   - `entries()`：返回键值对的遍历器
+   - `forEach()`：使用回调函数遍历每个成员
+
+4. 遍历的应用
+
+   + forEach()
+
+     类数组的forEach 没有返回值
+
+   + 扩展运算符（`...`）内部使用`for...of`循环，所以也可以用于 Set 结构。
+
+     ```js
+     let set = new Set(['red', 'green', 'blue']);
+     let arr = [...set];
+     // ['red', 'green', 'blue']
+     ```
+
+
+
+## Map
+
+### 基本用法
+
++ 它类似于对象，也是键值对的集合，但是***“键”的范围不限于字符串***，各种类型的值（包括对象）都可以当作键。也就是说，Object 结构提供了“字符串—值”的对应，Map 结构提供了“值—值”的对应，
+
++ Map 可以接受一个数组作为参数。该数组的成员是一个个表示键值对的数组。
+
+  ```js
+  const map = new Map([
+    ['name', '张三'],
+    ['title', 'Author']
+  ]);
+  
+  map.size // 2
+  map.has('name') // true
+  map.get('name') // "张三"
+  map.has('title') // true
+  map.get('title') // "Author"
+  ```
+
+### 实例的属性
+
++ size 属性
+
+  ```js
+  // size属性返回 Map 结构的成员总数。
+  const map = new Map();
+  map.set('foo', true);
+  map.set('bar', false);
+  
+  map.size // 2
+  ```
+
++ set(key, value)
+
+  ```js
+  // set方法设置键名key对应的键值为value，然后返回整个 Map 结构。如果key已经有值，则键值会被更新，否则就新生成该键。
+  const m = new Map();
+  
+  m.set('edition', 6)        // 键是字符串
+  m.set(262, 'standard')     // 键是数值
+  m.set(undefined, 'nah')    // 键是 undefined
+  
+  // set方法返回的是当前的Map对象，因此可以采用链式写法。
+  let map = new Map()
+    .set(1, 'a')
+    .set(2, 'b')
+    .set(3, 'c');
+  ```
+
++ get(key)
+
+  `get`方法读取`key`对应的键值，如果找不到`key`，返回`undefined`
+
++ has(key)
+
+  `has`方法返回一个布尔值，表示某个键是否在当前 Map 对象之中。
+
++ delete(key)
+
+  `delete`方法删除某个键，返回`true`。如果删除失败，返回`false`。
+
++ clear()
+
+  `clear`方法清除所有成员，没有返回值。
+
+### 遍历方法
+
+- `keys()`：返回键名的遍历器。
+- `values()`：返回键值的遍历器。
+- `entries()`：返回所有成员的遍历器。
+- `forEach()`：遍历 Map 的所有成员。
+
+
+
+## 与其他数据结构的互相转换
+
+### **Map 转为数组**
+
+```js
+const myMap = new Map()
+  .set(true, 7)
+  .set({foo: 3}, ['abc']);
+[...myMap]
+// [ [ true, 7 ], [ { foo: 3 }, [ 'abc' ] ] ]
+```
+
+### 数组 转为 Map
+
+```js
+new Map([
+  [true, 7],
+  [{foo: 3}, ['abc']]
+])
+// Map {
+//   true => 7,
+//   Object {foo: 3} => ['abc']
+// }
+```
+
+
+
+### **Map 转为对象**
+
+```javascript
+// 如果有非字符串的键名，那么这个键名会被转成字符串，再作为对象的键名。
+function strMapToObj(strMap) {
+  let obj = Object.create(null);
+  for (let [k,v] of strMap) {
+    obj[k] = v;
+  }
+  return obj;
+}
+
+const myMap = new Map()
+  .set('yes', true)
+  .set('no', false);
+strMapToObj(myMap)
+// { yes: true, no: false }
+```
+
+
+
+### **对象转为 Map**
+
+```js
+function objToStrMap(obj) {
+  let strMap = new Map();
+  for (let k of Object.keys(obj)) {
+    strMap.set(k, obj[k]);
+  }
+  return strMap;
+}
+
+objToStrMap({yes: true, no: false})
+// Map {"yes" => true, "no" => false}
+```
+
+
+
+### **Map 转为 JSON**
+
++ Map 的键名都是字符串，这时可以选择转为对象 JSON。
+
+  ```js
+  function strMapToJson(strMap) {
+    return JSON.stringify(strMapToObj(strMap));
+  }
+  
+  let myMap = new Map().set('yes', true).set('no', false);
+  strMapToJson(myMap)
+  // '{"yes":true,"no":false}'
+  ```
+
+
+
++ Map 的键名有非字符串，这时可以选择转为数组 JSON。
+
+  ```js
+  function mapToArrayJson(map) {
+    return JSON.stringify([...map]);
+  }
+  
+  let myMap = new Map().set(true, 7).set({foo: 3}, ['abc']);
+  mapToArrayJson(myMap)
+  // '[[true,7],[{"foo":3},["abc"]]]'
+  ```
+
+
+### **JSON 转为 Map**
+
+```js
+// JSON 转为 Map，正常情况下，所有键名都是字符串。
+function jsonToStrMap(jsonStr) {
+  return objToStrMap(JSON.parse(jsonStr));
+}
+
+jsonToStrMap('{"yes": true, "no": false}')
+// Map {'yes' => true, 'no' => false}
+
+// 但是，有一种特殊情况，整个 JSON 就是一个数组，且每个数组成员本身，又是一个有两个成员的数组。这时，它可以一一对应地转为 Map。这往往是 Map 转为数组 JSON 的逆操作。
+function jsonToMap(jsonStr) {
+  return new Map(JSON.parse(jsonStr));
+}
+
+jsonToMap('[[true,7],[{"foo":3},["abc"]]]')
+// Map {true => 7, Object {foo: 3} => ['abc']}
+```
+
+
+
+
+
+
+
+# class基本语法
+
++ 基本上，ES6 的`class`可以看作只是一个语法糖，它的绝大部分功能，ES5 都可以做到。
+
++ 事实上，类的所有方法都定义在类的`prototype`属性上面。
+
+  ```js
+  class Point {
+    constructor() {
+      // ...
+    }
+  
+    toString() {
+      // ...
+    }
+  
+    toValue() {
+      // ...
+    }
+  }
+  
+  // 等同于
+  
+  Point.prototype = {
+    constructor() {},
+    toString() {},
+    toValue() {},
+  };
+  ```
+
++ 类的内部所有定义的方法，都是不可枚举的（non-enumerable）。这一点与 ES5 的行为不一致。
+
+  ```js
+  class Point {
+    constructor(x, y) {
+      // ...
+    }
+  
+    toString() {
+      // ...
+    }
+  }
+  
+  Object.keys(Point.prototype)
+  // []
+  Object.getOwnPropertyNames(Point.prototype)
+  // ["constructor","toString"]
+  
+  // ----------------------------------------------------------
+  var Point = function (x, y) {
+    // ...
+  };
+  
+  Point.prototype.toString = function() {
+    // ...
+  };
+  
+  Object.keys(Point.prototype)
+  // ["toString"]
+  Object.getOwnPropertyNames(Point.prototype)
+  // ["constructor","toString"]
+  ```
+
+### constructor 方法
+
++ constructor`方法是类的默认方法，通过`new`命令生成对象实例时，自动调用该方法。一个类必须有`constructor`方法，如果没有显式定义，一个空的`constructor`方法会被默认添加。
+
+  ```js
+  class Point {
+  }
+  
+  // 等同于
+  class Point {
+    constructor() {}
+  }
+  ```
+
++ ***类必须使用`new`调用***，否则会报错。这是它跟普通构造函数的一个主要区别，后者不用`new`也可以执行。
+
+  ```js
+  class Foo {
+    constructor() {
+      return Object.create(null);
+    }
+  }
+  
+  Foo()
+  // TypeError: Class constructor Foo cannot be invoked without 'new'
+  ```
+
+
++ 与 ES5 一样，实例的属性除非显式定义在其本身（即定义在`this`对象上），否则都是定义在原型上（即定义在`class`上）。
+
+  ```js
+  //定义类
+  class Point {
+  
+    constructor(x, y) {
+      this.x = x;
+      this.y = y;
+    }
+  
+    toString() {
+      return '(' + this.x + ', ' + this.y + ')';
+    }
+  
+  }
+  
+  var point = new Point(2, 3);
+  
+  point.toString() // (2, 3)
+  
+  point.hasOwnProperty('x') // true
+  point.hasOwnProperty('y') // true
+  point.hasOwnProperty('toString') // false
+  point.__proto__.hasOwnProperty('toString') // true
+  ```
+
+
+### 属性表达式
+
+类的属性名，可以采用表达式。
+
+```js
+let methodName = 'getArea';
+
+class Square {
+  constructor(length) {
+    // ...
+  }
+
+  [methodName]() {
+    // ...
+  }
+}
+```
+
+
+
+### 注意点
+
++ **严格模式**
+
+  类和模块的内部，默认就是严格模式
+
++ **不存在提升**
+
+  类不存在变量提升（hoist），这一点与 ES5 完全不同。
+
++ **this 的指向**
+
+  类的方法内部如果含有`this`，它默认指向类的实例。
+
+
+
+
+
+### 静态方法
+
++ 类相当于实例的原型，所有在类中定义的方法，都会被实例继承。如果在一个方法前，加上***`static`***关键字，就表示该方法不会被实例继承，而是直接通过类来调用，这就称为“静态方法”。
+
+  ```js
+  class Foo {
+    static classMethod() {
+      return 'hello';
+    }
+  }
+  
+  Foo.classMethod() // 'hello'
+  
+  var foo = new Foo();
+  foo.classMethod()
+  // TypeError: foo.classMethod is not a function
+  
+  // 注意，如果静态方法包含this关键字，这个this指的是类，而不是实例。
+  ```
+
++ 父类的静态方法，可以被子类继承。
+
+  ```js
+  class Foo {
+    static classMethod() {
+      return 'hello';
+    }
+  }
+  
+  class Bar extends Foo {
+  }
+  
+  Bar.classMethod() // 'hello'
+  ```
+
+
++ 静态方法也是可以从`super`对象上调用的。
+
+  ```js
+  class Foo {
+    static classMethod() {
+      return 'hello';
+    }
+  }
+  
+  class Bar extends Foo {
+    static classMethod() {
+      return super.classMethod() + ', too';
+    }
+  }
+  
+  Bar.classMethod() // "hello, too"
+  ```
+
+### 实例属性的新写法
+
+实例属性除了定义在`constructor()`方法里面的`this`上面，也可以定义在类的最顶层。
+
+```js
+class IncreasingCounter {
+  constructor() {
+    this._count = 0;
+  }
+    
+  increment() {
+    this._count++;
+  }
+}
+// 这个属性也可以定义在类的最顶层，其他都不变
+class IncreasingCounter {
+    _count = 0;
+
+	increment() {
+    this._count++;
+  }
+}
+```
+
+
+
+### 静态属性
+
+静态属性指的是 Class 本身的属性，即`Class.propName`，而不是定义在实例对象（`this`）上的属性。
+
+```js
+// 目前，只有这种写法可行，因为 ES6 明确规定，Class 内部只有静态方法，没有静态属性。
+class Foo {
+}
+
+Foo.prop = 1;
+Foo.prop // 1
+// 现在有一个提案提供了类的静态属性，写法是在实例属性法的前面，加上static关键字。
+class MyClass {
+  static myStaticProp = 42;
+
+  constructor() {
+    console.log(MyClass.myStaticProp); // 42
+  }
+}
+
+```
+
+
+
+# Class 继承
+
+### 简介
+
++ Class 可以通过`extends`关键字实现继承，这比 ES5 的通过修改原型链实现继承，要清晰和方便很多。
+
++ ***子类必须在`constructor`方法中调用`super`方法***，否则新建实例时会报错。这是因为子类自己的`this`对象，必须先通过父类的构造函数完成塑造，得到与父类同样的实例属性和方法，然后再对其进行加工，加上子类自己的实例属性和方法。如果不调用`super`方法，子类就得不到`this`对象。
+
+  ```js
+  class Point { /* ... */ }
+  
+  class ColorPoint extends Point {
+    constructor() {
+    }
+  }
+  
+  let cp = new ColorPoint(); // ReferenceError
+  ```
+
++ ES5 的继承，实质是先创造子类的实例对象`this`，然后再将父类的方法添加到`this`上面（`Parent.apply(this)`）。ES6 的继承机制完全不同，实质是先将父类实例对象的属性和方法，加到`this`上面（所以必须先调用`super`方法），然后再用子类的构造函数修改`this`。
+
++ 如果子类没有定义`constructor`方法，这个方法会被默认添加，代码如下。也就是说，不管有没有显式定义，任何一个子类都有`constructor`方法。
+
+  ```js
+  class ColorPoint extends Point {
+  }
+  
+  // 等同于
+  class ColorPoint extends Point {
+    constructor(...args) {
+      super(...args);
+    }
+  }
+  ```
+
++ 在子类的构造函数中，只有调用`super`之后，才可以使用`this`关键字，否则会报错。这是因为子类实例的构建，基于父类实例，只有`super`方法才能调用父类实例。
+
+### Object.getPrototypeOf() 
+
+```js
+// Object.getPrototypeOf方法可以用来从子类上获取父类。
+Object.getPrototypeOf(ColorPoint) === Point
+// true 因此，可以使用这个方法判断，一个类是否继承了另一个类。
+```
+
+### super关键字
+
++ ***`super`作为函数调用时，代表父类的构造函数***。ES6 要求，子类的构造函数必须执行一次`super`函数。
+
+```js
+class A {}
+
+class B extends A {
+  constructor() {
+    super();
+  }
+}
+// 注意，super虽然代表了父类A的构造函数，但是返回的是子类B的实例，即super内部的this指的是B的实例，因此super()在这里相当于A.prototype.constructor.call(this)。
+```
+
++ 作为函数时，***`super()`只能用在子类的构造函数之中***，用在其他地方就会报错。
+
++ ***`super`作为对象时，在普通方法中，指向父类的原型对象；在静态方法中，指向父类。***
+
+  ```js
+  class A {
+    p() {
+      return 2;
+    }
+  }
+  
+  class B extends A {
+    constructor() {
+      super();
+      console.log(super.p()); // 2
+    }
+  }
+  
+  let b = new B();
+  
+  // 上面代码中，子类B当中的super.p()，就是将super当作一个对象使用。这时，super在普通方法之中，指向A.prototype，所以super.p()就相当于A.prototype.p()。
+  ```
+
++ 在子类普通方法中通过`super`调用父类的方法时，方法内部的`this`指向当前的子类实例。
+
+  ```js
+  class A {
+    constructor() {
+      this.x = 1;
+    }
+    print() {
+      console.log(this.x);
+    }
+  }
+  
+  class B extends A {
+    constructor() {
+      super();
+      this.x = 2;
+    }
+    m() {
+      super.print();
+    }
+  }
+  
+  let b = new B();
+  b.m() // 2
+  ```
+
+
++ 由于`this`指向子类实例，所以如果***通过`super`对某个属性赋值，这时`super`就是`this`***，赋值的属性会变成子类实例的属性。
+
+  ```js
+  class A {
+    constructor() {
+      this.x = 1;
+    }
+  }
+  
+  class B extends A {
+    constructor() {
+      super();
+      this.x = 2;
+      super.x = 3;
+      console.log(super.x); // undefined
+      console.log(this.x); // 3
+    }
+  }
+  
+  let b = new B();
+  // 上面代码中，super.x赋值为3，这时等同于对this.x赋值为3。而当读取super.x的时候，读的是A.prototype.x，所以返回undefined。
+  ```
+
++ 如果`super`作为对象，用在静态方法之中，这时`super`将指向父类，而不是父类的原型对象。
+
+  ```js
+  class Parent {
+    static myMethod(msg) {
+      console.log('static', msg);
+    }
+  
+    myMethod(msg) {
+      console.log('instance', msg);
+    }
+  }
+  
+  class Child extends Parent {
+    static myMethod(msg) {
+      super.myMethod(msg);
+    }
+  
+    myMethod(msg) {
+      super.myMethod(msg);
+    }
+  }
+  
+  Child.myMethod(1); // static 1
+  
+  var child = new Child();
+  child.myMethod(2); // instance 2
+  
+  // 上面代码中，super在静态方法之中指向父类，在普通方法之中指向父类的原型对象。
+  ```
+
++ 在子类的静态方法中通过`super`调用父类的方法时，方法内部的`this`指向当前的子类，而不是子类的实例。
+
+  ```js
+  class A {
+    constructor() {
+      this.x = 1;
+    }
+    static print() {
+      console.log(this.x);
+    }
+  }
+  
+  class B extends A {
+    constructor() {
+      super();
+      this.x = 2;
+    }
+    static m() {
+      super.print();
+    }
+  }
+  
+  B.x = 3;
+  B.m() // 3
+  ```
+
+
+### 类的 prototype 属性和__proto__属性
+
+（1）子类的`__proto__`属性，表示构造函数的继承，总是指向父类。
+
+（2）子类`prototype`属性的`__proto__`属性，表示方法的继承，总是指向父类的`prototype`属性。
+
+```js
+class A {
+}
+
+class B extends A {
+}
+
+B.__proto__ === A // true
+B.prototype.__proto__ === A.prototype // true
+```
+
+类的继承是按照下面的模式实现的:
+
+```js
+class A {
+}
+
+class B {
+}
+
+// B 的实例继承 A 的实例
+Object.setPrototypeOf(B.prototype, A.prototype);
+
+// B 继承 A 的静态属性
+Object.setPrototypeOf(B, A);
+
+const b = new B();
+
+// Object.setPrototypeOf方法的实现。
+Object.setPrototypeOf = function (obj, proto) {
+  obj.__proto__ = proto;
+  return obj;
+}
+```
+
+### 实例的 __proto__ 属性
+
+子类实例的__proto__属性的__proto__属性，指向父类实例的__proto__属性。也就是说，子类的原型的原型，是父类的原型。
+
+```js
+var p1 = new Point(2, 3);
+var p2 = new ColorPoint(2, 3, 'red');
+
+p2.__proto__ === p1.__proto__ // false
+p2.__proto__.__proto__ === p1.__proto__ // true
+```
+
