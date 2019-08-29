@@ -1,2 +1,2 @@
-![1567051004791](C:%5CUsers%5CAdministrator%5CDesktop%5C%E7%AC%94%E8%AE%B0%5Cimages%5C1567051004791.png)
+![1567051004791](https://github.com/xieoxiaohua170520/studyNotes/blob/master/images/1567051004791.png)
 
