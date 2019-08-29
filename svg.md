@@ -31,12 +31,9 @@
 ```
 
 + 注意：
-
   1. viewBox与viewport宽高比为一定比例时会撑满 viewport
-
   2. preserveAspectRatio属性：让viewBox保持宽高比
-
-     ***demo 1.html***
++ demo  1.html
 
 #### preserveAspectRatio
 
@@ -60,7 +57,7 @@
 
       6. Y Max viewBox的最大Y值对齐viewport的底边
 
-         ![1567058708677](https://github.com/xieoxiaohua170520/studyNotes/blob/master/images/1567058708677.png)
+         ![1567058708677](https://gitee.com/xiexiaohua/my_notes/blob/master/images/1567058708677.png)
 
   + metOrSlice：控制viewBox缩放的方式
 
@@ -78,4 +75,4 @@
   ></svg>
   ```
 
-  
++ demo  2.html
