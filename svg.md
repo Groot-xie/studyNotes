@@ -46,20 +46,13 @@
     + 取值： 
 
       1. xMin  viewBox的最小X值对齐viewport的左边部
-
       2. xMid  viewBox的X轴中点对齐viewport的X轴中点
-
       3. xMax viewBox的最大X值对齐viewport的右边部
-
       4. YMin  viewBox的最小Y值对齐viewport的顶边
-
       5. YMid  viewBox的Y轴中点对齐viewport的Y轴中点
-
       6. Y Max viewBox的最大Y值对齐viewport的底边
 
-         ![1567058708677](https://gitee.com/xiexiaohua/my_notes/blob/master/images/1567058708677.png)
-
-         https://gitee.com/xiexiaohua/my_notes/blob/master/images/1567058708677.png
+      ![1567058708677](images/1567058708677.png)
 
   + metOrSlice：控制viewBox缩放的方式
 
