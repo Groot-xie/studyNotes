@@ -59,6 +59,8 @@
 
          ![1567058708677](https://gitee.com/xiexiaohua/my_notes/blob/master/images/1567058708677.png)
 
+         https://gitee.com/xiexiaohua/my_notes/blob/master/images/1567058708677.png
+
   + metOrSlice：控制viewBox缩放的方式
 
     + 取值：
