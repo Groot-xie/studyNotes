@@ -1,0 +1,10 @@
+superslide
+swiper
+
+http://www.jq22.com/
+
+http://www.17sucai.com/
+// jquery 源码分析
+https://www.cnblogs.com/aaronjs/p/3279314.html 
+// 深入理解原型和闭包
+http://www.cnblogs.com/wangfupeng1988/p/3977924.html
