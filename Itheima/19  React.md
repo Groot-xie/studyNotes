@@ -1055,6 +1055,309 @@ class Hello extends React.Component {
 
 # Redux
 
+## 一、React项目技术栈
+
++ react
++ react-router(react-router-dom)
++ 状态管理：mobx(简单) / redux(复杂)
++ dva：集成 react / react-router / redux
+
+
+
+## 二、redux核心概念
+
+```npm
+npm i redux -S
+```
+
++ store
++ reducer
++ action
+
+
+
+## 三、原则和概念
+
++ 单一数据源
+
++ state是只读的
+
++ 使用纯函数来执行修改
+
++ 不要直接修改状态，而是返回一个新的状态
+
+  ```js
+  state = {
+      list: [1, 2, 3]
+  }
+  
+  // 错误示范
+  state.list.push(4)
+  return state
+  
+  // 正确示范
+  return [...state.list, 4]
+  ```
+
++ action ----提供想法----> store ----通知你来干----> reducer
+
+
+
+## 四、三个核心概念的理解
+
++ stroe(redux仓库)：管理者，管理 action 和 reducer，提供了store以及操作store的方法 ----> 妈
++ action(想法)：“砖家”， 只提供想法，不干活 ----> 孩子
++ reducer(实现)：劳动者，搬砖的人
+
+
+
+> action
+
++ action 是<font color=ff0000> **行为** </font>的抽象，视图中的每个用户交互都是一个action(增、删任务等。。)
+
++ 作用一：定义应用中可以执行的动作(或操作)的类型(type)
+
++ 作用二：提供并传递要改变的状态
+
++ 使用：通过 store.dispatch() 将 action 传到store
+
++ 注意点
+
+  1. <font color=ff0000> **类型：Js对象** </font>
+
+  2. 要求：必须有 type 属性(string)，表示要执行的动作，使用全大写字母来表示，可以带有_
+
+     ```js
+     {
+         type: 'ADD_TODO'，
+         data: {}
+     }
+     ```
+
+  3. 如果这个交互动作需要<font color=ff0000> **数据** </font>，应在对象中提供数据
+
+  4. <font color=ff0000> **一般由方法生成** </font>(actionCreate)
+
+  5. 当应用规模大时，type 会被定义成字符串常量，建议使用单独的模块或者文件来存放 action 。一般文件名定义为 actionTypes.js 用来存储所有 action 的名称
+
+```js
+// 函数生成，灵活，不写死
+const addTodo = name => ({
+    type: 'ADD_TODO'，
+    name
+})
+
+const todo = addTodo('study react')
+```
+
+
+
+> reducer 根据指定的action，来实现要完成的状态
+
++ reducer 是<font color=ff0000> **行为响应** </font>的抽象，根据action执行相应的逻辑操作，<font color=ff0000> **返回最新的state** </font>
++ 代码解释 (previousState, action) => newState
++ 根据应用现有的状态和触发的 action 返回新状态的函数称为 reducer
++ 注意：不要直接修改state，应返回一个新的state，保证数据的不可变性(immutability)
+  1. <font color=ff0000> **纯函数(函数式编程的一个概念，输入决定输出)** </font>, 
+     + 不要直接修改state
+     + 不要修改传入的参数，而应根据传入的数据返回一个最新的数据
+  2. 传入旧数据和 action
+  3. 返回新状态
+  4. 每个 reducer 只负责管理应用全部state中它负责的一部分(职责单一)
+  5. 随着应用的膨胀，要对 reducer 函数进行拆分，拆分后的每一块独立负责管理 state 的一部分
+
+```js
+const todos = (state = [], action) => {
+  switch (action.type) {
+    case 'ADD_TODO':
+      // 返回一个新数据，并不修改传入的数据
+      return [...state, {
+        text: action.text,
+        completed: false
+      }]
+    // 如果无法处理传入的action，应返回参数state，而不是不作处理
+    default:
+      return state
+  }
+}
+```
+
++ reducer 纯函数说明
+  1. 特点：同样的输入，必须得到同样的输出
+  2. 原则
+     + 不得改写参数
+     + 不能调用 Date.now()、ajax 修改作用域外的东西、Math.random() 等不纯的方法，因为每次会得到不一样的结果
+     + 不能调用系统 I/O 的 API
+  3. reducer 必须为一个纯函数
+  4. 纯函数主要的含义就是它<font color=ff0000> **不可以修改影响输入值** </font>
+  5. 没有副作用，副作用指的是例如函数中一些异步调用或者会影响函数作用域之外的变量一类的操作
+
+
+
+> store
+
++ 一个应用只有一个 store
++ store 负责将 action 和 reducer 关联在一起
++ store 的<font color=ff0000> **作用** </font>： 1. 维持应用的state 2. 提供操作state的方法
++ store 中的核心方法
+  1. getState() ----> 获取当前state状态
+  2. dispatch() ----> 分发action，触发某个动作
+  3. subscribe() ----> 订阅，当store中的state发生变化时就会触发，参数：回调函数
++ 组件强更新：class 组件中的 this.forceUpdate()
+
+```js
+// MVC ---> react V ---> redux M/C
+// 1.根据 reducer 创建 store
+// createStore 用于创建 store 需要一个 reducer 作为参数
+import { createStore } from 'redux'
+import todoApp from './reducers'
+// 2.根据 reducers 创建 store
+// 参1：reducer  参2：设置默认状态
+// 说明：创建 store 的时候，将reducer 作为参数传给 store， store内部会自动调用传入的reducer。目的：拿到默认状态。store拿到reducer方法返回值，默认走default
+let store = createStore(todoApp)
+// 3.获取state
+store.getState()
+
+// ⑴ 注册监听器
+// ⑵ 返回注销该监听器的函数
+// 说明：每次state更新时，都会执行该回调函数打印日志
+const unsubscribe = store.subscribe(() => {
+  console.log(store.getState())
+})
+
+// 4.更新state
+// 调用所有已经注册的监听器函数，比如：上面打印日志监听器
+store.dispatch(addTodo('learn about store'))
+
+// ⑶ 注销监听器
+unsubscribe()
+```
+
+
+
+## 五、搭配React(react 和 redux 关联)
+
++ react-reudx 规定：UI组件由用户提供；容器组件由react-redux自动生成
++ 用户负责视图层(view)，状态管理交由react-redux
+
++ 问题
+  1. react组件如何触发一个 action 动作(dispatch)
+  2. store中状态改变后如何重新渲染到页面中
++ 解决
+  1. 提供 connect() 方法，用来连接 react 和 redux
+  2. 基于react中单向数据流， 父组件更新自动传递。使用 react-redux 中提供的父组件， provide 包裹自己的组件
+
+
+
+> react-redux 的基本使用
+
++ 安装
+
+  ```npm
+  npm i react-redux -S
+  ```
+
++ 从 react-redux 包中导入 Provider、connect
+
++ 使用 Provider 包裹整个 react 应用
+
++ 使用 connect 包裹自己的组件，并且传递组件中要用的 state 和 操作 state 的 dispatch 方法
+
+
+
+> connect() 方法
+
++ 作用：用于从 UI 组件生成容器组件，将两种组件关联起来。通过connect方法，可以包裹一个现有的组件，为该组件提供内部需要用到的 redux 中的 state 和操作 state 的方法
++ 理解：相当于 connect 在获取 redux 的 store 之后，再根据传入的方法，把我们需要的部分对应到 props 属性中，再传递到我们的组件中
+
+```js
+import {Provider, connect} from 'react-redux'
+// TodoList(ui组件) --转为--> TodoListContainer(容器组件)
+// TodoListContainer 就是由 react-redux 通过 connect 方法自动生成的容器组件
+const TodoListContainer = connect()(TodoList)
+```
+
++ 为了定义业务逻辑，需要给出下面两方面的信息
+
+  1. 输入逻辑：redux 中的 state 对象(数据)， 如何在 UI 组件中使用
+  2. 输出逻辑：用户发出的动作如何变为 Action 对象，从 UI 组件传出去
+
+  ```js
+  import { connect } from 'react-redux'
+  
+  // 1.映射state
+  // mapStateToProps作用：将redux中的state转化为传递给组件的props
+  // count：传递给组件的数据props.count：为connect方法提供一个参数，用来在组件中获取redux中提供的数据
+  const mapStateToProps = (state, ownProps) => ({
+    count: state
+  })
+  
+  // 2.映射dispatch
+  const mapDispatchToProps = (dispatch, ownProps) => ({
+    handleIncrement: () => {
+      dispatch(increament(3))
+    },
+    handleDecrement: () => {
+      dispatch(decrement(1))
+    }
+  })
+  
+  // connect方法功能：
+  // 1.包裹原组件，将state和action通过props的方式传入到原组件内部
+  // 2.监听store中state的变化，使其包裹的原组件可以相应state变化实时更新
+  // connect方法新返回一个组件，是原始组件的包裹，包裹后的组件中可获取到state和dispatch方法
+  const VisibleTodoList = connect(mapStateToProps, mapDispatchToProps)(TodoList)
+  ```
+
++ 通过 connect() 创建的组件， 在 mount 的时候就注册监听器，当通过 dispatch 修改状态时，触发监听，监听中调用 setState() 触发了组件更新
+
+
+
+> provide组件
+
++ 作用： provide 的唯一功能是传入 store 对象，让容器组件中的所有组件可以使用 store 中的 state
+
+```js
+import { Provider, connect } from 'react-redux'
+import { createStore } from 'redux';
+
+let store = createStore(reducer)
+// provide 组件，可以让容器组件拿到state
+ReactDOM.render(
+  <Provider store={ store }>
+    <App></App>
+  </Provider>, document.getElementById('root')
+)
+```
+
+
+
+> combineReducers ：import { combineReducers } from 'redux'
+
++ 作用：把一个由不同 reducer 函数作为值的对象，合并成一个根 reducer 函数
++ 说明1：合并 reducer 会影响 redux 中 state 的结构(state 结构与该方法对象参数结构相同)
++ 说明2：合并后的 reducer 可以调用各个子 reducer，并把它们的结果合并成一个 state 对象， state 对象的结构由传入 reducer 的 key 决定
+
+```js
+import { combineReducers } from 'redux';
+
+// 使用combineReducers合并多个reducer
+function todos(state = [], action) {}
+function visibilityFilter(state = {}, action) {}
+
+// 合并两个reducer：会被合并为一个state对象
+// 说明：最终的state中包含两个属性
+const todoApp = combineReducers({
+  todos, visibilityFilter
+})
+// 导出reducers
+export default todoApp
+```
+
+
+
+
+
 # Fetch
 
 + Fetch 说明
@@ -1143,3 +1446,23 @@ class Hello extends React.Component {
      
 
   
+
+# todos 案例
+
++ 处理唯一id
+
+  ```js
+  import { v4 } from 'uuid'
+  ```
+
++ 明确错误源码的位置
+
+  ```js
+  // webpack.config.js
+  devtool: "cheap-module-eval-source-map"
+  ```
+
++ 分离开发思想
+
+  1. 容器组件和展示组件分离
+  2. 容器组件：Container：都是与redux进行交互的逻辑，容器组件由connect方法生成，容器组件中看不到组件结构，而用来包裹展示组件提供 state 和 dispatch 的逻辑
