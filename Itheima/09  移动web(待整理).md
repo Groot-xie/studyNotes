@@ -283,5 +283,257 @@ Block Formatting Context：页面上一个隔离的独立渲染区域
 
 
 > 浏览器
->
+
+如果每句 JS 操作都去重绘，浏览器可能受不了，所以浏览器都会优化这些操作
+
++ 浏览器机制：回流重绘机制
+
+  浏览器会维护一个队列，把所有会引起回流、重绘的操作放入这个队列，等队列中的操作到了一定数量或一定的时间间隔。浏览器就会 flush 队列，进行一次批处理，将多次的回流、重绘变成一次回流重绘
+
++ 例外情况
+
+  一些代码可以强制浏览器提前 flush 队列，当向浏览器请求一些 style 信息的时候，会让浏览器 flush 队列
+
+  1. offsetTop / offsetLeft / offsetWidth / offsetHeight
+  2. scrollTop / scrollLeft / scrollWidth / scrollHeight
+  3. clientTop / clientLeft / clientWidth / clientHeight
+  4. getComputedStyle() / curremtStyle(IE)
+
+  
+
 > 如何性能优化
+
+本质：减少回流、重绘的次数(需要简单对渲染树的操作)，尤其减少回流
+
++ 直接使用 className 修改样式，少用 style 设置样式
+
++ 让要操作的元素进行 <font color=ff0000> 离线处理 </font>,处理完后一起更新。使用 display=none 技术(只会引起两次重绘回流)，减少回流和重绘的次数
+
+  离线处理：
+
+  1. 先 display: none
+
+  2. 设置样式(此时在 DOM 树，不能 render tree)
+
+  3. display: block
+
+     最终只需触发两次回流和重绘
+
+     原理：display： none 的元素不在 render tree 中，设置样式不会引起回流重绘
+
++ 将需要多次重排的元素，postion 属性设置为 absolute 或 fixed (不影响 render tree 结构，只影响自身，相当于单独渲染)。此时元素脱离文档流，它的变化不会影响到其它元素为动画的 HTML 元素
+
+  例如动画：那么修改它们的 css 是会大大减少 reflow
+
+  C3 实现动画的 transform 变换只有一种视觉效果，所以通过 transform 位移或者变换只会触发重绘，不会触发回流(比position 为 absolute fixed 好)
+
++ 完成功能是前提，在完成功能的情况下优化代码性能
+
++ 尽量不要将获取性操作放在 for 循环中( 重复渲染性能低下 )
+
+  注意：重绘、回流的作用一方面可以解决一些小bug，其主要作用是性能优化
+
+
+
+
+
+# 十二、web移动端事件
+
++ touch 事件：pc 端无法触发
+
+  > touchstart
+
+  触发：手指开始触摸时
+
+  e事件对象( jquery 对 e 对象包装，真正原始事件对象为 e.orginalEvent )：
+
+  1. e.changedTouches 所有发生改变的手指
+  2. e.targetTouches 目标对象上的所有手指
+  3. e.touches 屏幕上的所有手指
+
+  
+
+  > touchmove
+
+  触发：手指在屏幕滑动时触发
+
+  
+
+  > touchend
+
+  触发：手指离开屏幕触发
+
+  
+
+  > touchcancel
+
+  触发：触摸事件被一些系统事件(电话等)打断时
+
+  应用：一般用于单机游戏暂停
+
++ 事件对象 e
+
+  1. e.changedTouches
+  2. e.targetTouches
+  3. e.touches
+  4. clientX / clientY 相对于可视区域(浏览器)的xy坐标
+  5. screenX / sceenY 相对于屏幕的xy坐标
+  6. pageX / pageY 相对于页面文档的xy坐标
+
+  注意：在手指离开屏幕时(touchend)要通过 e.changedTouches 来获取坐标
+
+
+
+
+
+# 十三、zepto框架(N个模块)
+
+zepto 是一个轻量级的针对现代高级浏览器的 js 库，类似 jquery ，有类似的 api
+
++ zepto 与 jquery 的区别
+
+  1. jquery 针对 pc 端， 主要用于解决浏览器兼容性问题，zepto 主要针对移动端
+  2. zepto 比 jquery 轻量，文本体积更小
+  3. zepto 封装了一些移动端手势事件
+
++ 版本
+
+  1. 生产版
+     + zepto
+     + event
+     + ajax
+     + form
+     + ie
+  2. 开发版(很多模块)
+  3. 定制版
+
++ zepto 定制
+
+  安装 nodejs 环境
+
+  1. 下载 zepto.js
+  2. 解压缩
+  3. cmd 命令进入解压缩后的目录
+  4. 执行 npm i 命令
+  5. 编辑 make 文件的 41 行，添加自定义模块并保存
+  6. 执行命令 npm run-script dist
+  7. 查看目录 dist 构建好的 zepto.js
+
++ zepto 手势事件(封装 touchstart、touchend、touchmove)
+
+  1. swipe 手指滑动时触发
+  2. swipeLeft 左滑时触发
+  3. swipeRight 右滑时触发
+  4. swipeUp 上滑触发
+  5. swipeDown 下滑触发
+  6. tap：轻触事件，用于替代移动端的click事件，因为click事件在老版本中会有 300ms 的延迟
+
+  说明：
+
+  1. click 事件在 pc 端非常有用，但在移动端会有 300ms 左右的延迟， 300ms 用于判断双击还是长按事件。只有 300ms 之内没有后续动作发生时才会触发 click 事件
+
+     解决方案：
+
+     + 设置视口，并禁用用户缩放 
+     + 使用 tap 事件代替 click (保留用户缩放的功能)
+
+  2. tap 只要轻触了，就会触发，体验更好
+
+  3. 注意：在一些老版本的 iphone 3/4 中，就算设置了视口禁用用户缩放，也有 300ms 延迟，使用第二种方案即可
+
+
+
+
+
+# 十四、iscroll 插件(版本5，版本4有很多bug)
+
++ 区域滚动实现原理
+
+  1. 一定要满足父盒子嵌套了子盒子(iscroll 使用时)
+  2. 子盒子大小一定要超过父盒子的大小
+  3. iscroll 只对元素中的第一个子元素起作用，其它元素会被忽略
+  4. iscroll 默认是垂直方向进行滚动的，如需要水平方向滚动，需要传参配置
+  5. 为保证计算准确，iscroll 初始化在 window.onload 事件中(保证图片已加载)
+  6. 清浮动(准确计算高度)
+
++ 配置
+
+  ```js
+  // 以下为默认配置
+  // 都设置为true 可斜滑
+  new Iscroll(domId, {
+      scrollX: false,
+      scrollY: true
+  })
+  ```
+
+
+
+
+
+# 十五、响应式布局(媒体查询)
+
+定义：网站能够兼容多个终端(手机、平板、电脑、手表)
+
++ 为什么要有响应式布局？
+
+  1. pc 端开发的网页已无法满足移动设备的要求
+  2. 通常的做法针对移动端单独做一套特定的版本
+  3. 如终端越来越多，开发的版本就会越来越多
+  4. 响应式布局：一个网页能够兼容多个终端(节约成本开发)
+
++ 优缺点
+
+  1. 优点
+     + 面对不同分辨率设备灵活性强
+     + 能够快捷解决多设备显示适应问题
+  2. 缺点
+     + 兼容各种设备工作量大，效率低下
+     + 代码累赘，会出现隐藏无用的元素，加载时间加长
+     + 这是一种折中性质的设计解决方法，多方面因素影响而达不到最佳效果
+     + 一定程度上改变了网站原有的布局结构，出现用户混淆的情况
+
++ 响应式开发的现状
+
+  1. 如果已有 pc 的网站，那么一般不会使用响应式开发，针对移动端再开发一套系统
+  2. 在新建站点上采用响应式开发的越来越多
+  3. 国内，响应式开发还不是特别流行。但响应式开发是大势所趋
+
++ 响应式开发的原理
+
+  对不同屏幕做兼容，根据屏幕尺寸的变换，给不同元素设置不同样式
+
++ <font color=ff0000> 设备分类 </font>
+
+  1. 超小屏(手机)   <   768px
+  2. 小屏(平板)   768px ~ 992px
+  3. 中屏(老式机)   992px ~ 1200px
+  4. 大屏(电脑)   > 1200px
+
++ <font color=ff0000> 媒体查询 </font>
+
+  定义：媒体查询(Media Query)是 css 提出的新属性。通过媒体查询到 screen 的宽度从而指定某个宽度区间的网页布局
+
+  1. 语法
+
+     ```css
+     // screen 媒体类型
+     @media screen and 条件 {} and...
+     ```
+
+  2. 条件写法
+
+     + min-width(最小宽)：只要屏幕宽大于等于这个值的设备就生效
+     + max-width(最大宽)：只要屏幕宽度小于这个值的设备就生效
+     + width：宽度完全等于这个值时生效
+
+  3. 例子
+
+     ```css
+     // 缺点：太繁琐麻烦
+     @media screen and (min-width: 1200px) {}
+     @media screen and (max-width: 992px) {}
+     @media screen and (min-width: 600px) and (max-width: 1000px) {}
+     ```
+
+     
