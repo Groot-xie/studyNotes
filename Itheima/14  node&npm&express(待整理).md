@@ -784,5 +784,142 @@ node package manager
 
 es6 提供的才是规范的模块化，新规范无法直接使用
 
+模块化规范：皆由社区提供，不标准，ES6有标准的
+
++ AMD 代表：require.js
+
+  浏览器不具备模块化：require() / define()
+
++ CMD 代表：sea.js  浏览器端模块
+
++ common.js node 服务端模块
+
+  require() / module.exports  
+
+  node 天生具有模块化标准，<font color=red> **commonJS 有很多规范，模块化只是其中一种** </font>
+
++ UMD
+
+  是一种模块化写法，兼容AMD、CMD、commonJS 以及不使用模块化语法
+
+
+
+## 一、基本概念
+
+在 node 中，应用由模块组成。node 中采用 commonJS 模块规范
+
++ 一个文件就是一个模块，所有代码运行在模块的作用域
++ 每个模块都是一个独立的作用域，在这个文件中定义的变量、函数、对象都是私有的
++ 模块加载顺序，按照代码中出现的顺序
+
+
+
+## 二、node 中模块分类
+
++ 核心模块
+
+  由 node 中本身提供，不需要安装，直接引入使用
+
+  1. fs：文件操作模块
+  2. http：网络操作模块
+  3. path：路径操作模块
+  4. url：解析地址的模块
+  5. querystring：解析参数字符串的模块
+
++ 第三方模块
+
+  + 由社区或个人提供
+  + 比如：mime 模块 / art-template / jquery
+  + 基本使用：npm 下载 ---> 引入 ---> 使用
+
++ 自定义模块
+
+  + 由开发人员创建的模块( js 文件)
+
+  + 基本使用
+
+    创建模块 ---> 引入模块
+
+  + 注意
+
+    自定义模块的路径必须以 ./ 开头
+
+    require('./a'); 推荐省略 .js 后缀
+
+
+
+## 三、模块的导入和导出
+
++ 模块导入
+
+  1. 通过 require('fs') 来加载模块
+  2. 如果是第三方模块，需要先 npm 下载
+  3. <font color=red> **如果是自定义模块，需要加上相对路径** </font>，可省略 .js 后缀，如果文件名为 index.js , 那么 index.js 也可省略
+  4. 模块可以多次加载，但只会在第一次加载，同步加载，因为在本地加载速度快，不需要异步(服务器)
+
++ 模块导出 module.exports
+
+  在模块内部，<font color=red> **module 变量代表的就是当前模块** </font>, 它的 exports 属性就是对外的接口。加载某个模块，加载的就是 module.exports 属性，这个属性指向一个空对象
+
+  ```js
+  // module.exports 指向的是一个对象，给对象添加属性即可
+  module.exports.num = 123;
+  module.exports.age = 18;
+  
+  // 通过 module.exports  也可以导出一个值
+  module.exports = '123';
+  ```
+
+  module 对象：
+
+  ​	node 内部提供一个 module 构造函数，所有模块都是 module 的实例
+
++ module.exports(<font color=red> **推荐使用** </font>) 与 exports
+
+  1. <font color=red> **exports 是 module.exports 的引用** </font>
+
+  2. **<font color=red> 注意：</font>**给 module.exports 赋值会切断与 exports 之间的联系
+
+     + 直接添加属性两者皆可
+     + 赋值操作时，只能用 module.exports
+
+     module.exports === exports ----> true
+
+  ```js
+  // 等价操作
+  module.exports.num = 123;
+  exports.num = 123;
+  // 赋值操作：不要使用 exports = {}
+  module.exports = {};
+  ```
+
++ 第三方模块(以 mime 包为例) 引入查找规则
+
+  1. 先基于当前文件模块所属目录找 node-modules 目录
+
+  2. 如找到，则去该目录中找 mime 目录
+
+  3. 如找到，则找该目录的 package.json 文件
+
+  4. 如找到，则找该文件的 main 属性(入口文件)
+
+  5. 如找到，则拿到该属性对应的文件路径
+
+  6. 如找到 mime 目录之后
+
+     发现没有 package.json 或有 package.json 没有 main 属性 或有 main 属性，但指向的路径不存在，则 node 会默认去 mime 目录中找 index.js / index.node / index.json 文件
+
+  7. 如找不到 index 或找不到 mime 或找不到 node_modules，则进入上一级目录找 node_modules，查找规则同上
+
+  8. 如上一级未找到，继续向上，直到当前文件所属磁盘根目录，最后报错
+
+
+
+
+
+
+
+
+
 # express
 
