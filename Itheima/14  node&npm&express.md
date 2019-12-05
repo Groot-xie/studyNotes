@@ -82,7 +82,7 @@ nodeJs 是基于 chrome V8 引擎的 JavaScript 运行环境，nodeJs 允许 Jav
 
 + REPL 介绍
 
-  1. Read-Eval-Print-Loop(交互式解释器)
+  1. `Read-Eval-Print-Loop` (交互式解释器)
 
      + R：读取。读取用户输入，解析输入 JavaScript 数据结构并存储在内存中
      + E：执行。执行输入的数据结构
@@ -786,15 +786,15 @@ es6 提供的才是规范的模块化，新规范无法直接使用
 
 模块化规范：皆由社区提供，不标准，ES6有标准的
 
-+ AMD 代表：require.js
++ AMD 代表：`require.js`
 
   浏览器不具备模块化：require() / define()
 
-+ CMD 代表：sea.js  浏览器端模块
++ CMD 代表：`sea.js`  浏览器端模块
 
 + common.js node 服务端模块
 
-  require() / module.exports  
+  `require()` / `module.exports`  
 
   node 天生具有模块化标准，<font color=red> **commonJS 有很多规范，模块化只是其中一种** </font>
 
@@ -852,12 +852,12 @@ es6 提供的才是规范的模块化，新规范无法直接使用
 
 + 模块导入
 
-  1. 通过 require('fs') 来加载模块
+  1. 通过 `require('fs')` 来加载模块
   2. 如果是第三方模块，需要先 npm 下载
   3. <font color=red> **如果是自定义模块，需要加上相对路径** </font>，可省略 .js 后缀，如果文件名为 index.js , 那么 index.js 也可省略
   4. 模块可以多次加载，但只会在第一次加载，同步加载，因为在本地加载速度快，不需要异步(服务器)
 
-+ 模块导出 module.exports
++ 模块导出 `module.exports`
 
   在模块内部，<font color=red> **module 变量代表的就是当前模块** </font>, 它的 exports 属性就是对外的接口。加载某个模块，加载的就是 module.exports 属性，这个属性指向一个空对象
 
@@ -883,7 +883,7 @@ es6 提供的才是规范的模块化，新规范无法直接使用
      + 直接添加属性两者皆可
      + 赋值操作时，只能用 module.exports
 
-     module.exports === exports ----> true
+     `module.exports === exports ----> true`
 
   ```js
   // 等价操作
@@ -951,24 +951,24 @@ app.listen(3000, () => console.log('服务器启动成功！'))
 
 ## 二、API 说明
 
-+ express()
++ `express()`
 
   创建一个 express 应用，并返回
 
-+ app.get()
++ `app.get()`
 
   注册一个 get 类型的路由
 
   注意：只需注册路由，所有的请求都会被处理(未配置的请求路径，相应 404)
 
-+ res.send()
++ `res.send()`
 
   发送数据给客户端，并自动设置 content-type
 
   + 参数可以是字符串、数组、对象、Buffer
   + 只能使用一次
 
-+ req / res
++ `req / res`
 
   与 http 模块中的作用相同是扩展后的请求相应对象
 
@@ -978,20 +978,20 @@ app.listen(3000, () => console.log('服务器启动成功！'))
 
 + app.METHOD
 
-  如：app.get(查询) / app.post(添加) / app.delete(删除) / app.patch(put修改)
+  如：`app.get`(查询) / `app.post`(添加) / `app.delete`(删除) / `app.patch`(put修改)
 
-+ app.all(path, callback)
++ `app.all(path, callback)`
 
   + <font color=red> **path 与请求地址必须完全相同(精准匹配)** </font>
   + 可以处理任意的请求数据
 
-+ app.use(path, callback) ---> 更主要的是处理中间件
++ `app.use(path, callback)` ---> 更主要的是处理中间件
 
   + <font color=red> **注意：只要以 path 开头的请求地址都会被 use 处理** </font>
   + <font color=red> **可以处理任意的请求类型** </font>
   + path 参数可以省略，默认值为 './'
   + 场景：所有的请求都执行相同的操作(如：判断登录...)
-  + use(path, callback) 中指定的 path 为虚拟路径，访问时要求输入 path，但 req.url 取得的不包含 path
+  + `use(path, callback)` 中指定的 path 为虚拟路径，访问时要求输入 path，但 req.url 取得的不包含 path
 
 
 
@@ -1004,7 +1004,7 @@ app.listen(3000, () => console.log('服务器启动成功！'))
   ```
 
   + 作用：将指定的文件夹作为静态资源目录，所有的请求都可以直接到这个目录中读取文件，读取后返回给浏览器
-  + 说明：express.static() 可以调用多次
+  + 说明：`express.static()` 可以调用多次
   + web：应该指定绝对路径
 
 
@@ -1013,11 +1013,11 @@ app.listen(3000, () => console.log('服务器启动成功！'))
 
 + get 请求参数(获取请求路径中的参数，是一个对象)
 
-  req.query
+  `req.query`
 
 + post 请求参数(获取 post 请求参数，需配置 body-parser 模块)
 
-  req.body
+  `req.body`
 
   ```js
   // 获取 post 请求参数
@@ -1166,8 +1166,8 @@ app.listen(3000, () => console.log('启动成功！'))
 
 + body-parser 中间件的使用
 
-  + 获取 get 请求的参数：req.query
-  + 获取 post 请求的参数：req.body (需要借助 body-parser 中间件)
+  + 获取 get 请求的参数：`req.query`
+  + 获取 post 请求的参数：`req.body` (需要借助 body-parser 中间件)
 
   1. 安装
 
