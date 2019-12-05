@@ -923,3 +923,279 @@ es6 提供的才是规范的模块化，新规范无法直接使用
 
 # express
 
+node 用于构建 web 服务器的一个常用框架。基于 nodeJS 平台，快速、开放的 web 开发框架
+
+koa2 下一代的 web 服务器框架
+
+
+
+## 一、基本使用
+
+```js
+// 1.安装 npm i express
+// 2.导入
+const express = require('express');
+// 3.创建 express 实例， 也就是创建 express 服务器
+const app = express();
+// 4.路由
+app.get('/', (req, res) => {
+    res.send('Hello world!')
+})
+// 5.启动服务器
+app.listen(3000, () => console.log('服务器启动成功！'))
+// 说明：express 默认处理 404
+// 说明：express 自动设置 mime 类型
+```
+
+
+
+## 二、API 说明
+
++ express()
+
+  创建一个 express 应用，并返回
+
++ app.get()
+
+  注册一个 get 类型的路由
+
+  注意：只需注册路由，所有的请求都会被处理(未配置的请求路径，相应 404)
+
++ res.send()
+
+  发送数据给客户端，并自动设置 content-type
+
+  + 参数可以是字符串、数组、对象、Buffer
+  + 只能使用一次
+
++ req / res
+
+  与 http 模块中的作用相同是扩展后的请求相应对象
+
+
+
+## 三、注册路由的三种方式
+
++ app.METHOD
+
+  如：app.get(查询) / app.post(添加) / app.delete(删除) / app.patch(put修改)
+
++ app.all(path, callback)
+
+  + <font color=red> **path 与请求地址必须完全相同(精准匹配)** </font>
+  + 可以处理任意的请求数据
+
++ app.use(path, callback) ---> 更主要的是处理中间件
+
+  + <font color=red> **注意：只要以 path 开头的请求地址都会被 use 处理** </font>
+  + <font color=red> **可以处理任意的请求类型** </font>
+  + path 参数可以省略，默认值为 './'
+  + 场景：所有的请求都执行相同的操作(如：判断登录...)
+  + use(path, callback) 中指定的 path 为虚拟路径，访问时要求输入 path，但 req.url 取得的不包含 path
+
+
+
+## 四、模拟 Apache 服务器
+
++ 处理静态资源
+
+  ```js
+  app.use('/', express.static('web'))
+  ```
+
+  + 作用：将指定的文件夹作为静态资源目录，所有的请求都可以直接到这个目录中读取文件，读取后返回给浏览器
+  + 说明：express.static() 可以调用多次
+  + web：应该指定绝对路径
+
+
+
+## 五、request 常用属性和方法
+
++ get 请求参数(获取请求路径中的参数，是一个对象)
+
+  req.query
+
++ post 请求参数(获取 post 请求参数，需配置 body-parser 模块)
+
+  req.body
+
+  ```js
+  // 获取 post 请求参数
+  // 1.导入 body-parser 模块
+  const bodyParser = require('body-parser')
+  // 2.将 post 请求参数转为对象，存储到 req.body 中
+  app.use(bodyParser.urlencoded({ extended: true }))
+  // 3.此时就可以获取到 post 请求参数了
+  console.log(req.body)
+  ```
+
+  
+
+## 六、respose 常用属性和方法
+
+```js
+// 1.发送数据给客户端并自动设置 content-type
+res.send()
+// 2.发送文件给浏览器，并根据文件后缀自动设置 content-type，文件路径必须是绝对路径
+res.sendFile(path.join(...dirname, 'index.html'))
+// 3.设置 http 响应码同时发送 stateMessage
+res.sendStatus(200)
+// 4.设置响应头
+res.set('content-type', 'text/plain')
+res.set({
+    'content-type': 'text-plain',
+    cute: 'fang'
+})
+// 5.重定向
+res.redirect('/index')
+// 6.渲染模板：读取模板文件，使用配置好的模板引擎解析这个文件，最终将解析后的 html 内容发送给浏览器
+res.render(path, obj) // 参1: 模板文件路径(可经app.set设置) 、 参2：模板中使用的数据
+// 7.将参数转为 json 格式发送给浏览器
+res.json({})
+// 8.作用1：调用接口时，指定了 callback 参数，就返回 json格式的数据
+//   作用2：调用接口时，没有指定 callback 参数，就返回 json 格式的数据
+res.jsonp({})
+```
+
+
+
+## 七、express 使用模板引擎
+
+方式1：1 ---> 2 ---> 3
+
+方式2：1 ---> 2 ---> 4 
+
+1. 安装
+
+   ```npm 
+   npm i art-template
+   npm i express-art-template
+   ```
+
+2. 
+
+   ```js
+   // 为后缀为 html 的模板设置模板引擎
+   app.engine('html', require('express-art-template'))
+   ```
+
+3. 使用
+
+   ```js
+   app.get('/', (req, res) => {
+       // path: 文件路径(绝对路径，可经 app.set 设置)
+       // obj: 数据
+       res.render(path, obj)
+   })
+   ```
+
+4. 简化写法
+
+   ```js
+   // 设置模板文件所在目录(指定从哪个目录读取模板文件，如果文件就在 views 文件夹下，此步可以省略)
+   app.set('views', './')
+   // 设置模板文件的后缀为 html
+   app.set('view engine', 'html')
+   // 渲染 index.html 模板文件，并发送给浏览器 参1： 'index' 默认去 views 文件夹读取
+   res.render('index', { list: [] })
+   ```
+
+
+
+## 八、express 中外置路由使用
+
+目的：将路由封装到一个独立的路由模块中，有利于代码的封装和模块化
+
+```js
+// route.js
+
+// 1. 加载 express 模块
+const express = require('express')
+// 2. 调用 Route() 方法，得到路由容器实例
+const router = express.Router()
+// 3. 为 router 添加不同的路由
+router.get('/', function(req, res) {
+    res.send('Hello Express')
+})
+router.get('/add', function(req, res) {
+    
+})
+// 4. 将 router 路由容器导出
+module.exports = router
+```
+
+```js
+// app.js
+
+// 1. 加载 express 模块
+const express require('express')
+// 2. 加载上面自定义的路由模块
+const router = require('./router')
+const app = express()
+// 3. 将自定义路由模块 router 通过 app.use() 方法挂载到 app 实例上，这样 app 实例程序就拥有了 router 路由
+app.use(router)
+app.listen(3000, () => console.log('启动成功！'))
+```
+
+
+
+## 九、中间件
+
++ 定义
+
+  中间件 middleware 是一个函数，它可以访问请求对象 req，相应对象 res，可以通过 next 参数将中间件传递给下一个中间件
+
++ 功能
+
+  1. 执行任何代码
+  2. 修改请求和相应对象
+  3. 终结请求 --- 相应循环
+  4. 调用堆栈中的下一个中间件
+
++ 定义一个中间件
+
+  ```js
+  // 添加一个中间件
+  app.use(function(req, res, next) {
+      req.aa = '胡聪聪'
+      res.bb = '很帅'
+      // 中间件可以通过 next 传递给下一个中间件
+      next()
+  })
+  ```
+
++ body-parser 中间件的使用
+
+  + 获取 get 请求的参数：req.query
+  + 获取 post 请求的参数：req.body (需要借助 body-parser 中间件)
+
+  1. 安装
+
+     ```npm
+     npm i body-parser
+     ```
+
+  2. 使用
+
+     ```js
+     // 导入
+     const bodyParser = require('body-parser')
+     // 使用
+     // extended：true ---> 表示使用 qs 库来解析查询字符串
+     // extended：false ---> 表示使用 querystring 库来解析字符串
+     // 解析 application/x-www-form-urlencode 类型的参数
+     app.use(bodyParser, rlencoded({ extended: false }))
+     
+     // 解析 application/json 类型的 post 请求
+     app.use(bodyParser.json())
+     
+     // 通过req.body 获取参数
+     app.post('/', (req, res) => {
+         console.log(req.body)
+         res.send('哈哈')
+     })
+     ```
+
+  3. 注意
+
+     中间件是有顺序的
