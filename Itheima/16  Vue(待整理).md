@@ -656,6 +656,633 @@ watch: {
 
     
 
+## 十、生命周期
+
++ 实例生命周期：一个组件(实例)从开始到最后消亡所经历的各种状态，就是一个组件(实例)的生命周期
+
++ 生命周期钩子函数的定义：从组件被创建 ----> 到组件挂载到页面上运行 ----> 再到页面关闭组件被卸载。这三个阶段总是伴随着各种事件的发生，这些事件统称为生命周期钩子函数
+
++ 生命周期阶段
+
+  1. 挂载阶段(进入页面)
+  2. 更新阶段(当数据发生改变)
+  3. 卸载阶段(实例卸载)
+
+  注意：
+
+  1. vue 在执行过程中会自动调用生命周期钩子函数
+  2. 钩子函数的名称都是 vue 提供好的
+
++ 虚拟 dom 对象(virtual dom)
+
+  就是一个普通的 js 对象，用于描述 html 结构
+
++ diff 算法
+
+  查找两个对象的不同之处，找到不同之处后只将不同的地方更新到视图中(<font color=red> **vue 中通过虚拟 dom 对象和 diff 算法来实现高效的视图更新** </font>)
+
++ vue更新 dom 方式
+
+  只将发生改变的 dom 更新。diff算法来找不同的地方。vue 会比较数据更新前后的两个虚拟 dom 对象，通过 diff 算法找到两个对象的不同之处
+
+  1. 第一次渲染创建 `虚拟dom树` (js 对象)
+  2. 数据发生改变后，生成一颗新的 dom 树
+  3. 对比新旧两颗虚拟 dom 树，通过 diff 算法找到记录差异地方
+  4. 只将差异的地方重新渲染到页面中
+
+![1575703783178](images/lifecycle.png)
+
+> 挂载阶段
+
++ `beforeCreate()` <font color=red> **此时，无法获取data中的数据、methods中的方法** </font>
+
+  ```js
+  beforeCreate() {
+      // 不常用
+      // 在实例初始化之后，数据观测 data observer 和 event / watcher 事件配置之前被调用
+      // 此时，无法获取data中的数据、methods中的方法
+  }
+  ```
+
++ `created()` <font color=red> **有数据，但模板还未渲染** </font>
+
+  ```js
+  created() {
+      // 常用：可以调用methods中的方法，可以改变data中的数据
+      // 场景：发送ajax请求数据
+  }
+  ```
+
++ `beforeMount()` 挂载之前
+
+  ```js
+  beforeMount() {
+      // 挂载之前被调用
+      // 该钩子函数执行时，vue还没有渲染模板，此时获取的还是模板内容
+  }
+  ```
+
++ `mounted()` <font color=red> **模板已渲染** </font>
+
+  ```js
+  mounted() {
+      // 该钩子函数执行的时候，vue已经完成模板渲染。此时，可获取dom对象，进行dom操作
+      // 场景：操作dom，发送ajax请求
+  }
+  ```
+
+> 更新阶段
+
++ `beforeUpdate()` <font color=red> **此时获取到的数据是更新后的数据，但获取页面中的dom元素是更新之前的** </font>
+
+  ```js
+  beforeUpdate() {
+      // 数据更新时调用，发生在虚拟dom重新渲染和打补丁之前
+  }
+  ```
+
++ `update()`
+
+  ```js
+  update() {
+      // 组件dom已经更新，可执行依赖于dom的操作
+  }
+  ```
+
+> 卸载阶段
+
++ `beforeDestroy()`
+
+  ```js
+  beforeDestroy() {
+      // 实例销毁之前调用，再次实例仍然完全可用
+      // 场景：实例销毁之前，执行清理任务。比如：清理定时器
+  }
+  ```
+
++ `destroyed()`
+
+  卸载所有的 `watcher`、子组件已经事件(执行清理工作)。vue 会主动清理自己的内容(响应式数据、@事件)
+
+  ```js
+  destroyed() {
+      // vue实例销毁后调用，调用后，vue实例指示的所有东西全解绑，所有的事件监听器会被移除，所有的子实例也被销毁
+  }
+  ```
+
+
+
+## 十一、自定义指令
+
++ 作用：<font color=red> **进行 dom 操作** </font>
+
++ 场景
+
+  对纯 dom 元素进行底层操作。比如：文本框获得焦点
+
++ 分类
+
+  + 全局指令
+  + 局部指令
+
+> 全局指令
+
+```js
+Vue.directive('directiveName', {
+    bind() {},
+    update() {}
+})
+// bind 和 update 合写写法
+vue.directive('directiveName', function(el, binding) {
+    el.style.color = binding.value
+})
+```
+
+> 局部指令
+
+```js
+{
+    directives: {
+        directiveName: {}
+    }
+}
+```
+
+> 指令的钩子函数
+
++ `bind` 和 `inserted` 的区别
+
+  1. dom 对象还没有插入到页面中
+  2. bind 中只能对元素自身进行 dom 操作，而无法对父级元素操作。<font color=red> **只会调用一次，当指令绑定到当前元素时调用** </font>
+
+  ```js
+  bind(el) {
+      console.log(el.parentNode) // null
+  }
+  // 当元素被插入到父节点时调用(渲染时)
+  inserted(el) {
+      console.log(el.parentNode) // <div>...
+  }
+  ```
+
++ `update` 和 `componentUpdated` 的区别
+
+  ```js
+  // dom重新渲染前
+  update(el) { // 当指令对应的数据发生改变时
+  	console.log('update', el.innerHTML)    
+  }
+  // dom重新渲染后
+  componentUpdated(el) {
+      console.log('componentUpdated', el.innerHTML)
+  }
+  ```
+
++ `unbind`
+
+  ```js
+  // 指令与元素解绑时调用(页面移除此元素时)
+  unbind(el) {}
+  ```
+
++ 说明
+
+  1. 对象字面量
+
+     如果指令需要传入多个值时，可以传入一个 js 对象字面量，指令能够接收所有合法的 js 表达式
+
+     ```html
+     <div v-demo="{ color: 'white', text: 'hello' }"></div>
+     ```
+
+  2. 钩子之间数据共享：建议通过元素的 dataset 来进行
+
+> 指令的参数
+
+所有的钩子函数两个参数 el 和 binding
+
++ el：当前元素
++ binding： 一个对象，包含以下属性
+  1. name：指令名，不包含 v- 前缀
+  2. value：指令的绑定值，如 `v-my-directive="1+1"` 中，绑定值为 2
+  3. oldValue：指令绑定的前一个值，仅在 update 和 componentUpdated 钩子中可用
+  4. expression：字符串形式的指令表达式，如 `v-my-directive="1+1"` 中的表达式为 `1+1`
+  5. arg：传给指令的参数，可选，如`v-my-directive:foo` 中，参数为 `foo`
+  6. modifiers：一个包含修饰符的对象，例如 `v-my-directive.foo.bar` 中，修饰符对象为 `{foo: true, bar: true}`
+
+
+
+## 十二、组件化开发
+
++ 概念：将一个完整的页面，分离成一个一个小的组件
++ 优点：容易维护、复用
+
+> 全局组件
+
++ 定义(注册)
+
+  `Vue.component(tagName, options)`
+
+  参1：表示组件名称
+
+  参2：配置对象，此配置对象与 vue 实例的配置对象几乎相同
+
+  ```js
+  // 示例
+  Vue.component('Hello', {
+      // 作用：指定组件模板
+      template: '',
+      // 同vue示例
+      methods: {},
+      // 不同vue示例，此data为函数
+      data(){
+          return {}
+      }
+  })
+  ```
+
++ 使用(HTML结构中)
+
+  ```html
+  <Hello></Hello>
+  ```
+
++ 注意点
+
+  1. 组件的模板有且只有一个<font color=red> **根元素** </font>
+
+  2. <font color=red> **组件也有自己的数据，通过 data 配置项指定组件的数据，但 data 是一个函数** </font>
+
+     ```js
+     // 返回值为一个对象，该对象的属性，表示该组件要使用的数据
+     // 目的：为了多个相同组件之间的data互不影响
+     data() {
+         return {
+             
+         }
+     }
+     ```
+
+  3. vue 实例中的配置项，几乎都可以在组件中使用
+
+     如：template / data() / methods / 实例钩子函数 / computed / watch / filter / directive
+
+  4. 组件时特殊的 vue 实例
+
+     + 组件时一个独立的个体，组件之间的数据是无法相互使用的
+     + 组件必须要在实例(如 app)之前创建，因为实例在挂载时，要先有组件
+
+> 局部组件
+
+只在当前实例有效(当前实例或模板中使用)
+
+```js
+// 在vm中
+components: {
+    Hello: {
+        template: ''
+    }
+}
+```
+
+> 组件通讯
+
+1. 组件时一个独立的个体，封闭的个体
+
+2. 组件中的数据，默认情况下，只能在组件内部使用
+
+3. 使用组件在开发项目时，多个组件之间可能需要相互配置，可能要使用另一组件的数据，这就产生了组件之间相互通讯的问题
+
+4. 组件通讯的三种情况
+
+   + 父组件 ---> 子组件
+   + 子组件 ---> 父组件
+   + 非父子组件之间的通讯
+
+5. <font color=red> **单向数据流** </font>
+
+   父组件数据发生改变，变化的数据会向下流动到子组件中，反则不行，类const机制
+
+6. 自定义事件名：`v-on` 事件监听器在 dom 模板中会被自动转换为全小写，建议使用 `kebb-case` 事件名
+
+7. props：html 中的 prop 大小写不敏感
+
++ 组件通讯：父传子(父为实例，子为模板组件)
+
+  + 方式：通过属性传递的方式，实现父子组件的通讯。通过 props 配置执行组件能够接受数据：`props['parentMsg']`
+
+  + 步骤
+
+    1. 在父组件的模板中，给子组件增加一个自定义的属性
+
+        `v-bind:parentMsg="msg"`
+
+    2. 子组件通过 props 属性进行接收，<font color=red> **props负责接收父组件传递的数据** </font>
+
+       `props: ['parentMsg']`
+
+    3. 子组件在内部模板中可以直接使用传递过来的值
+    4. 注意：<font color=red> **props 是只读属性** </font>，无法修改，只能使用，用法相当于本身的 data 中
+
++ 组件通讯：子到父（子组件为模板组件，父组件为vue实例)
+
+  整体思路
+
+  1. 父组件提供一个方法，作为自定义事件，传递给子组件
+
+     ```html
+     // 父组件给子组件注册一个自定义事件
+     <child @fn="getChildMsg"></child>
+     ```
+
+  2. 子组件触发这个自定义事件，触发事件时把数据传递给父组件
+
+     ```js
+     // 子组件调用方式
+     // 参1：表示要触发的事件，后面可以传参，父组件通过形参接收
+     this.$emit('fn')
+     ```
+
++ 组件通讯：非父子组件(兄弟组件)
+
+  非父子组件通过一个空的 vue 实例来传递数据
+
+  ```js
+  // bus 事件总线
+  const bus = new Vue()
+  
+  // 思路：A ---> B 传智
+  // 1. 组件B给bus注册一个事件，监听事件的处理程序，在组件创建时，给bus注册事件
+  created() {
+      bus.$on('get', msg => {})
+  }
+  // 2. 组件A触发bus上对应的事件，把值当成参数来传递
+  methods: {
+      send() {
+          bus.$emit('get', this.msg)
+      }
+  }
+  // 3. 组件B通过事件处理程序可以获取到传递的值
+  bus.$on('get', msg => {})
+  ```
+
+  
+
+
+
+
+
+## 十三 、Json-Server 工具
+
+https://github.com/typicode/json-server
+
+1. create a xxx.json file with some date
+
+   ```json
+   {
+     "posts": [
+       { "id": 1, "title": "json-server", "author": "typicode" }
+     ],
+     "comments": [
+       { "id": 1, "body": "some comment", "postId": 1 }
+     ],
+     "profile": { "name": "typicode" }
+   }
+   ```
+
+2. Start JSON Server
+
+   ```cmd
+   json-server --watch db.json
+   ```
+
+3. ok, can use it
+
+   以请求 list 为例
+
+   | 方法   | 路径    | 说明             |
+   | ------ | ------- | ---------------- |
+   | Get    | /list   | 获取全部数据     |
+   | Get    | /list/1 | 获取 id=1 的数据 |
+   | Post   | /list   | 增加数据         |
+   | Put    | /list/1 | 更新 id=1 的数据 |
+   | Patch  | /list/1 | 更新 id=1 的数据 |
+   | Delete | /list/1 | 删除 id=1 的数据 |
+
+4. 说明
+
+   json-server 提供 REST API
+
+   RESR API 约定：
+
+   + 查询数据 Get
+   + 添加数据 Post
+   + 删除数据 Delete
+   + 修改数据
+     + Put：Put请求必须提供完整的数据
+     + Patch：只要提供更新部分的数据
+
+
+
+# 单应用程序
+
+SPA-单页应用程序：`Single Page Application`
+
++ 定义：单页应用程序：只有一个 web 页面的应用，是加载单个 html 页面，并在用户与应用程序交互时动态更新该页面的 web 应用程序
++ 优势
+  1. 减少请求体积，加快页面相应速度、降低对服务器压力
+  2. 更好的用户体验，让用户在 web app 感受 native app 的流畅
++ 主要技术点
+  1. `ajax` / `axios`
+  2. 哈希值(锚点)的使用：`window.location.hash`
+  3. `hashchange` 事件： `window.addEventListenner('hashchange', fn)`
++ 实现思路
+  1. 监听锚点变化的事件，根据不同的锚点值，请求相应的数据
+  2. 锚点(#)原本用作页面内部进行跳转，定位并展示相应的内容
+  3. SPA 中，锚点被用作请求不同资源的标识，请求数据并展示内容
+
+
+
+# Router
+
+
+
+# Axios
+
+https://github.com/axios/axios
+
+vue 是一个渐进式框架，没有提供发送 ajax 请求功能。所以，一般在 vue 中，用 axios 包来发送请求
+
+`Promise based Http client for the browser and nodeJs`
+
++ 以 promise 为基础的 http 客户端，运用于浏览器和 nodeJs
++ 封装 ajax 用来发送请求，异步获取数据
+
+
+
+## 一、基本使用
+
+> get
+
+```js
+// url后拼接数据
+axios.get(url).then(res => {
+    // res是一个axios处理后的结果是一个对象，数据被放在res.data中
+    console.log(res.data)
+})
+
+// 地址栏+param
+axios.post(url, {
+    params: {
+        name: 'hy'
+    }
+}).then(res => {
+    console.log(res.data)
+})
+```
+
+> post / patch
+
+```js
+// 参1：地址
+// 参2：数据对象
+axios.post(url, { name: 'hy' }).then(res => {
+    console.log(res.data)
+})
+```
+
+> 请求方式
+
+```js
+// 请求方式别名
+axios.request(config)
+axios.get(url[,config])
+axios.delete(url[,config])
+axios.head(url[,config])
+axios.options(url[,config])
+axios.post(url[,data[,config]])
+axios.put(url[,data[,config]])
+axios.patch(url[,data[,config]])
+// 统一方式
+axios[config]
+axios[{
+    url: '',
+    method: 'get',
+    data: {}, // params: {}
+    timeout: 1000,
+    responseType: 'json'
+}]
+```
+
+示例
+
+```js
+// 1. 引入，直接调用axios提供的api发生请求
+created() {
+    axios.get(url).then(res => {
+        console.log(res)
+    })
+}
+// 2. 配合 webpack 使用
+import Vue from 'vue'
+import axios from 'axios'
+//将axios添加到 Vue.prototype中
+Vue.prototype.$axios = axios
+
+// 3. 组件中红使用
+methods: {
+    getData() {
+        this.$axios.get(url).then(res => {}).catch(err => {})
+    }
+}
+
+// 4. api使用方式
+axios.get(url[,config])
+// ...
+```
+
+
+
+## 二、全局配置
+
+```js
+axios.defaults.baseURL = 'http://localhost:8899'
+```
+
+
+
+## 三、拦截器
+
++ 请求拦截器
+
+  <font color=red> **发请求 ---> 被拦截 ---> 服务器** </font>
+
+  ```js
+  axios.interceptors.request.use(function(config) {
+      // 请求之前执行的操作
+  }, function(err) {
+      // 错误处理
+      return Promise.reject(err)
+  })
+  ```
+
++ 相应拦截器
+
+  <font color=red> **服务器返回 ---> 被拦截 ---> 浏览器** </font>
+
+  ```js
+  axios.interceptors.response.use(function(res) {
+      // 请求完成后都要执行的操作
+  }, function(err) {
+      //错误处理
+      return Promise.reject(err)
+  })
+  ```
+
++ 示例
+
+  ```js
+  // 1. 示例-get
+  axios.get('/user?id=123').then(res => {
+      
+  }).catch(err => {
+      
+  }).then()
+  // 或传对象
+  axios.get('/user', {
+      params: {
+          id: 123
+      }
+  })
+  
+  // 2. 示例-post
+  axios.post('/user', {}).then(res => {
+      
+  }).catch(err => {
+      
+  })
+  
+  // 3. 示例-并发
+  axios.all([函数, 函数]).then(
+  	axios.spread(function(account, params) {
+          
+      })
+  )
+  // 函数定义示例
+  functionGetUserAccount() {
+      return axios.get('/user/123')
+  }
+  
+  // 4. 示例-可通过相关的配置发送请求
+  axios({
+      method: 'post',
+      url: '',
+      data: {}
+  })
+  ```
+
+  
+
 
 
 # Vuex
