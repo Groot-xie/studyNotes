@@ -654,9 +654,124 @@ watch: {
     }
     ```
 
-    
 
-## 十、生命周期
+
+
+## 十、$refs
+
+**<font color=red> 持有注册过 ref 特性的所有 dom 元素和组件实例 </font>**
+
+dom对象集合：dom添加 ref 属性可以将此 dom 添加到 $refs 中
+
+
+
+## 十一、插槽
+
+`<slot></slot>`：slot 是一个占位符，将来组件的子节点会替换 slot
+
++ 单
+
+  ```js
+  // 组件
+  Vue.component('msg-box', {
+      template: `
+  		<div>
+  			<h3>提示：</h3>
+  			<div>
+  				<slot>
+  					<p>默认值，当没有传入slot的时候，此处生效</p>
+  				</slot>
+  			</div>
+  		</div>
+  	`
+  })
+  ```
+
+  ```html
+  <!-- html -->
+  <msg-box>
+  	<p>这里的内容会替换上面的slot标签</p>
+  </msg-box>
+  ```
+
++ 多(具名插槽)
+
+  具名插槽：在给组件传递子节点时，可以通过 `name=head` 方式来指定哪个插槽传递数据
+
+  具名插槽和匿名插槽可以混合使用(位置要对上)
+
+  ```js
+  // 组件
+  Vue.component('msg-box', {
+      template: `
+  		<div>
+  			<slot name="head" />
+  			<slot name="content" />
+  		</div>
+  	`
+  })
+  ```
+
+  ```html
+  <!-- html -->
+  <msg-box>
+  	<span name="head"></span>
+      <p name="content"></p>
+  </msg-box>
+  ```
+
++ 作用域插槽
+
+  ```vue
+  <!-- p 默认的作用域为app，而不是msg-box，但p又是msg-box的插槽 -->
+  <div id="app">
+      <msg-box>
+      	<p>
+              
+          </p>
+      </msg-box>
+  </div>
+  <!-- 解决方法 -->
+  <!-- msg-box 中 -->
+  template: `
+  	<div>
+  		<slot :data="msg"></slot>
+  	</div>
+  `
+  <!-- app 中-->
+  <!-- scope是对象，data为传递过来的数据，scope可以解构 -->
+  <div id="app">
+      <msg-box>
+      	<p slot-scope="scope">
+              {{ scope.data }}
+          </p>
+      </msg-box>
+  </div>
+  	
+  ```
+
+  
+
+## 十二、template 内置组件
+
+template 是一个容器，用来包裹多个元素，但是 template 不会渲染在页面中。这样，可以在不改变页面解构的情况下，来控制多个元素的显示和隐藏
+
+```html
+<template v-if="isShow">
+	<p></p>
+	<p></p>
+	<p></p>
+</template>
+```
+
++ v-show：通过给当前标签添加 css 样式机制吗，控制元素的展示和隐藏。但 template 根本不会出现在页面中，所以加了 `display: none` **<font color=red> 无效 </font>**
++ v-if：根据值决定是否渲染，如为 false，这整个标签根本不会渲染就不会出现在页面中
+
+
+
+
+
+## 十三、生命周期
 
 + 实例生命周期：一个组件(实例)从开始到最后消亡所经历的各种状态，就是一个组件(实例)的生命周期
 
@@ -772,7 +887,7 @@ watch: {
 
 
 
-## 十一、自定义指令
+## 十四、自定义指令
 
 + 作用：<font color=red> **进行 dom 操作** </font>
 
@@ -872,7 +987,7 @@ vue.directive('directiveName', function(el, binding) {
 
 
 
-## 十二、组件化开发
+## 十五、组件化开发
 
 + 概念：将一个完整的页面，分离成一个一个小的组件
 + 优点：容易维护、复用
@@ -1026,13 +1141,146 @@ components: {
   bus.$on('get', msg => {})
   ```
 
-  
+
+
+
+## 十六、vue 单文件组件
+
+`signle-file component`
+
++ 后缀名 `.vue`，该文件需要被编译后才能在浏览器使用
++ 单文件组件依赖两个包 `vue-loader` `vue-template-compiler`
++ 安装 `npm i  vue-loader vue-tempplate-compiler -D`
+
+> 单文件组件使用步骤
+
+1. 安装
+
+   ```npm
+   npm i vue-loader vue-template-compiler -D
+   ```
+
+2. `webpack.config.js` 中配置 `.vue` 文件的 loader
+
+   ```js
+   { text: /\.vue$/, use: 'vue-loader' }
+   ```
+
+3. `webpack.config.js` 中添加 plugins
+
+   ```js
+   const VueLoaderPlugin = require('vue-loader/lib/plugin')
+   new VueLoaderPlugin()
+   ```
+
+4. 创建 `App.vue` 单文件组件
+
+5. 在 `main.js` 入口文件中，导入 vue 和 App.vue 组件。通过 render 将组件与实例挂在一起
+
+> 有单文件组件后在入口文件 main 中的使用
+
+```js
+// main.js
+import Vue from 'vue'
+// 导入组件
+import App from './App.vue'
+//
+const vm = new Vue({
+    el: '#app',
+    render: function(createElement) {
+        return createElement(App)
+    }
+})
+```
+
+> 单文件组件
+
+```vue
+<template></template>
+<script>
+	// 组件中的逻辑代码
+    export default {}
+</script>
+<style lang="less">
+	// 样式，可指定lang，lang等于less时。表示可使用less编译
+</style>
+```
+
+```js
+// webpack.config.js
+const VueLoaderPlugin = require('vue-loader/lib/plugin')
+{ test: /\.vue$/, loader: 'vue-loader' }
+plugins: [ new VueLoaderPlugin() ]
+```
+
+
+
+## 十七、vue 项目中样式问题
+
+两个 component 之间重名的样式会发生覆盖
+
+解决方式：给 style 标签添加 scope 属性，scope 属性添加后，样式只对组件中存在的内容生效。如果结构是通过类似于 innerHTML / v-html **<font color=red> 动态创建 </font>**的，**<font color=red> 那么改文件写的样式不会生效与动态创建的内容 </font>**
+
+```vue
+<style scope></style>
+```
 
 
 
 
 
-## 十三 、Json-Server 工具
+## 十八、vue 脚手架 vue-cli
+
++ 作用：通过一条命令，快速生成 vue 项目的目录结构。生成的项目中，webpack 的所有配置项都已经自动配置完成
+
++ 注意：初始化脚手架的时候，所在的路径不能有中文
+
++ vue 脚手架的使用步骤
+
+  1. 全局安装 `npm i vue-cli -g`
+
+  2. 通过 vue 命令初始化一个带有 webpack 模板的项目结构 `vue init webpack 项目名称`
+
+     + `vue-build` 选择 vue 编译模式
+
+       `runtime-compiler` ---> 完整版：运行时+编译器
+
+     + `use eslint to lint your code` 是否使用 Eslint 检验你写的代码
+
+     + 代码风格
+
+       `standard` / `airbnb`
+
+     + `setup unit text` 单元测试 ---> N
+
+     + `setup eze tests with Nighustch` 端到端测试 ---> N
+
++ vue 不同构建版本说明
+
+  vue 中提供两种编译模式
+
+  1. 完整版：运行时+编译器：既可使用 render 函数，也可使用 template 模板
+
+  2. 只包含运行时版本
+
+     我们自己手动通过 webpack 配置的打包环境中，通过 `import Vue from 'vue'` 导入的 vue 就是运行时版本的。`vue-runtime-esm.js` 只能用 render 函数来渲染组件
+
+  3. 以上两个版本的区别
+
+     完整版中既包含了运行时，又包含了编译器。编译器就是用来解析 vue 模板的(可以理解为就是 vue 实例中 template 配置项)。如果在运行时版本中，无法使用 template 模板内容，因为运行时版本中没有编译器，也就无法编译 template 模板内容，此时应用 render 函数来渲染组件内容
+
+     ```js
+     component: { App },
+     render(c) {
+         return c(App)
+     }
+     ```
+
+     
+
+
+
+## 十九、Json-Server 工具
 
 https://github.com/typicode/json-server
 
@@ -1084,6 +1332,66 @@ https://github.com/typicode/json-server
 
 
 
+## 二十、项目上线
+
++ 打包 ---> dist
+
+  ```npm
+  npm run build
+  ```
+
++ 优化(文件过大)
+
+  1. 按需加载
+
+     首屏加载时间：首屏加载的快慢是衡量项目性能的一个重要指标
+
+     按需加载：只加载首屏需要用到的内容，不在首屏的内容不加载，等到用到哪些内容的时候再加载
+
+     实现：**<font color=red> vue 异步组件(路由懒加载) </font>** + webpack代码分离功能( vue-cli 已经配置好了，只要将组件修改为异步组件即可 )
+
+     异步组件写法：
+
+     ```JS
+     const Home from '@/components/hom'
+     // 改为
+     const Home = () => import('@/components/home')
+     ```
+
+  2. 将两个组件一起打包
+
+     ```js
+     const Goods = () => import(/* webpackChunkName: "goods" */ '@/components/Goods')
+     const GoodAdd = () => import(/* webpackChunkName: "goods" */ '@/components/GoodAdd')
+     ```
+
+  3. 优化打包后的文件体积
+
+     + `vender.js` 体积最大(第三方模块)，所有的第三方文件都是本地代码中引入的，所以打包时，将这些第三方文件打包到 dist 目录中导致体积文件变大
+
+     + 解决方式：CDN(内容分发网络) 
+
+       不在本地引入第三方文件，直接引用线上的第三方文件地址。因为引入的是线上文件地址，那么本地代码没有这些文件了，打包出来的 dist 中也不会再包含这些文件，打包体积就小了
+
+       1. 在 `index.html` 中引入第三方文件的线上地址
+
+       2. 在 `./build/webpack.base.config.js` 中( resolve前)加额外的配置项
+
+          ```js
+          // 配置第三方CDN
+          // 小写vue(键)：表示要导入包名称
+          // 大写Vue(值)：表示这个包在window中暴露出来的名字
+          externals: {
+              vue: 'Vue'
+          }
+          ```
+
+          
+
+
+
+
+
 # 单应用程序
 
 SPA-单页应用程序：`Single Page Application`
@@ -1103,7 +1411,247 @@ SPA-单页应用程序：`Single Page Application`
 
 
 
+
+
+
+
 # Router
+
+一套映射规则(一对一的对应规则)
+
+<font color=red> **`$router` ---> 路由实例** </font>
+
+<font color=red> **`$route` ---> 当前激活的路由信息对象(包含当前 URL 解析得到的信息)** </font>
+
++ 浏览器中的路由：浏览器 URL 中的哈希值(#hash)与展示视图内容(template)之间的对应规则
++ vue 中的路由：hash 与 component 的对应关系，一个 hash 值对应一个组件
+
+
+
+## 一、基本使用
+
+1. 安装
+
+   ```npm
+   npm i vue-router -S
+   ```
+
+2. 引入 `vue 文件`，再引入 `vue-router.js`
+
+3. 创建路由规则(路由实例)
+
+   ```js
+   // 在创建路由之前得有component
+   const Home = Vue.component('Hello', {})
+   // path：用来指定路由规则，不带#。path：'*'，表示所有，写在最后
+   // component：用来指定路由匹配时要展示的组件
+   const router = new VueRouter({
+       routes: [{
+           path: '/hello',
+           component: 
+       }]
+   })
+   ```
+
+4. 将路由实例与 vue 实例关联
+
+   ```js
+   const vm = new Vue({
+       el: '#app',
+       data: {},
+       router: router
+   })
+   ```
+
+5. 在页面中指定路由展示在页面中的位置( <font color=red> **路由出口** </font>)
+
+   ```html
+   <router-view></router-view>
+   ```
+
+6. <font color=red> **路由入口** </font>
+
+   ```html
+   <!-- to属性与路由规则中的path相同 -->
+   <router-link to="/home"></router-link>
+   ```
+
+
+
+## 二、路由内部执行过程
+
++ 点击页面中的 `router-link` (a 标签)，改变浏览器的 hash 值
++ 哈希值改变之后，路由内部自动监听这个改变
++ 使用配置好的路由规则，来与当前的哈希值进行匹配
++ 如果匹配成功，就展示该路由对应的组件到页面中，路由出口 `<router-view />` 位置
+
+
+
+## 三、默认路由与重定向
+
++ 默认路由：`/` 自动被匹配
+
++ 路由重定向
+
+  ```js
+  { path: '/', redirect: '/home' }
+  ```
+
+
+
+## 四、路由导航高亮
+
++ 当前匹配的导航链接会自动添加 `router-link-exact-active` `router-link-active`(当前活动类名) 类名
+
++ 通过配置项 `linkActiveClass: now` 来修改默认的高亮类名
+
+  ```js
+  const router = new VueRouter({
+      routes: [],
+      // 修改的是 `router-link-active` 这个类名
+      linkActiveClass: 'now'
+  })
+  ```
+
++ 路由菜单高亮类名规则
+
+  1. 默认情况下，只要哈希值包含 `router-link` 中 to 属性的值，该路由会有一个高亮类名(模糊匹配), <font color=red> **`router-link-active` 此类名模糊匹配** </font>
+  2. 只要当哈希值和 `router-link` 中的 to 属性完全匹配时，该路由会添加 <font color=red> **`router-link-exact-active` 这个类名(精准匹配)** </font>
+  3. 解决：`router-link` 加 `exact` 属性，让该路由变为精确匹配
+
+
+
+## 五、路由参数
+
++ 说明：<font color=red> **需要把某种匹配到所有的路由** </font>，全映射到同一组件，此时，可以通过<font color=red> **路由参数来处理** </font>
+
++ 语法：`/user/:id`
+
++ 使用：当匹配到一个路由时，参数值会被设置到 **<font color=red> `this.$route.params` </font>** 。可以通过 **<font color=red> `$route.query` </font>** 获取 URL 中的查询字符串(querystring)等
+
+  ```html
+  <!-- 链接 -->
+  <router-link to="/user/1001">用户 JACK</router-link>
+  <router-link to="/user/1002">用户 ROSE</router-link>
+  ```
+
+  **<font color=red> `/:id?` 添加 ? 该路由为可选项，路由参数可有可无 </font>**
+
+  ```js
+  // 路由
+  { path: '/user/:id', component: User }
+  ```
+
+  该路由可以匹配什么样的哈希值：
+
+  + 能匹配的路由一定由两部分组成的
+  + 不能匹配的，如：
+    + `/user` 少了一部分
+    + `/abc` 从头就不匹配
+    + `/user/1/2` 多了一部分
+  + 可匹配
+    + `/user/12`
+    + `/user/abc`
+
++ 组件中如何获取路由参数
+
+  ```js
+  // 在组件模板中获取
+  {{ $router.params.id }}
+  // 在组件代码中获取
+  this.$route.params.id
+  ```
+
++ **<font color=red> 动态获取路由参数(响应路由参数变化) </font>**
+
+  ```js
+  // 触发：/user/1 ---> /user/2
+  // 复用策略：两个路由公共一个组件时，组件不会被销毁重建。所以，可以监听$route变化
+  watch: {
+      $route(to, from) {}
+  }
+  ```
+
+
+
+## 六、嵌套路由 - 子路由
+
++ 路由时可以嵌套的，即：路由又包含子路由
+
++ 规则：父组件包含 `router-view`，在路由规则中使用 children 配置
+
+  ```js
+  // 父组件
+  const User = Vue.component('user', {
+      template: `
+  		<div class="user">
+  			<router-view></router-view>
+  		</div>
+  	`
+  })
+  
+  // 子组件
+  const UserProfile = {}
+  const UserPosts = {}
+  
+  // 路由配置
+  {
+      path: '/user',
+      component: User,
+      // path说明：如果加 '/'，变成单独的路由独立存在。如果不加 '/'，那么该路由会与父级路由合并
+      children: [{
+          // 当 /user/profile 匹配成功， UserProfile会被渲染在User组件的<router-view />中
+          path: 'profile',
+          component: UserProfile
+      }, {
+          path: 'posts',
+          component: UserPosts
+      }]
+  }
+  ```
+
+
+
+## 七、编程式导航
+
+`this.$router.push('/home')`
+
+语法：`router.push(location, onComplete, onAbort)` 相当于 `<router-link />`
+
+说明：通过 js 代码实现路由跳转
+
+```js
+// 如果提供path，那么params会被忽略
+push('/home')
+push({path: '/home'})
+push({name: 'Home', params: {}, query: {} })
+```
+
+
+
+## 八、导航守卫
+
+导航表示路由正在发生改变
+
++ 基本用法
+
+  ```js
+  router.beforeEach((to, from, next) => {
+      // 当一个导航触发时，全局前置守卫按照创建顺序调用，守卫是异步解析的
+      // 每个守卫接收三个参数
+      // to：Route 即将要进入的路由目标对象
+      // from：Route 当前导航正要离开的路由
+      // next：Funtion
+      //		next() ---> 进入管道中的下一个钩子, 直接去to的路由
+      //		next(false) ---> 中断当前的导航
+      //		next('/') 或 next({ path: '/' }) ---> 跳转到一个不同的地址
+      //		next(error) ---> 如传入next的参数是一个 Error 实例。则导航会被终止且该错误会被传递给 router.OnError() 注册过的回调
+  })
+  ```
+
+
+
+
 
 
 
@@ -1282,6 +1830,8 @@ axios.defaults.baseURL = 'http://localhost:8899'
   ```
 
   
+
+
 
 
 
@@ -1486,6 +2036,8 @@ export default {
     }
 }
 ```
+
+
 
 
 
