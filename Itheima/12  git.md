@@ -145,7 +145,7 @@ git 仓库分区
 
 + `git checkout -- 文件名`
 
-  文件在工作区时，返回修改。丢弃工作区的修改
+  丢弃工作区的修改，让这个文件回到最近一次`git commit`或`git add`时的状态
 
 + `git reset HEAD 文件名`
 
