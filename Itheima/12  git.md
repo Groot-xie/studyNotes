@@ -67,7 +67,7 @@ git 仓库分区
 
 
 
-> `git add`  工作区 ---> 暂存区
+> `git add`  工作区 ---> 暂存区(Stage)
 
 + 作用：将文件由 工作区 添加到 暂存区
 
@@ -111,11 +111,33 @@ git 仓库分区
 
 + 作用：查看提交日志
 + 美化：`git log --pretty=oneline`
-+ git reflog 可以查看所有版本的信息操作
++ `git reflog` 可以查看所有版本的信息操作
 
 
 
+> `git relog`
 
++ 用来记录你的每一次命令
++ 如果进行了版本回退，那么被回退的版本通过 `git log` 就找不到了，可以通过 `git relog` 查看版本号
++ 穿梭前，用`git log`可以查看提交历史，以便确定要回退到哪个版本
++ 要重返未来，用`git reflog`查看命令历史，以便确定要回到未来的哪个版本
+
+
+
+> `git stach`
+
++ 作用：可以把当前工作现场“储藏”起来，等以后恢复现场后继续工作
+
++ `git stash list` 查看隐藏列表
++ `git stash apply` 用于恢复。恢复后，stash内容并不删除，你需要用`git stash drop`来删除
++ `git stash pop` 恢复的同时把stash内容也删了
++ 恢复指定的stash： `git stash apply stash@{0}`
+
+
+
+> `git cherry-pick`
+
++ 作用：复制一个特定的提交到当前分支
 
 # 四、git 对比
 
@@ -146,6 +168,8 @@ git 仓库分区
 + `git checkout -- 文件名`
 
   丢弃工作区的修改，让这个文件回到最近一次`git commit`或`git add`时的状态
+
+  `--` 很重要，没有它就变成了切换分支
 
 + `git reset HEAD 文件名`
 
@@ -232,12 +256,42 @@ git 仓库分区
   3. <font color=ff0000> 分支本质上是一个指针 </font>。当前分支指向最后一次提交的版本。git 中使用 <font color=ff0000> HEAD(最新版本) </font> 指向当前分支。
 + 命令
   1. `git branch`   ----->   查看所有分支
+  
   2. `git branch` 分支名   ----->   创建分支
+  
   3. `git checkout` 分支名   ----->   切换分支
+  
+     切换分支这个动作，用`switch`更科学。因此，最新版本的Git提供了新的`git switch`命令来切换分支
+  
+     + 创建并切换到新的`dev`分支，可以使用：
+  
+     ```git
+     $ git switch -c dev
+     ```
+  
+     + 直接切换到已有的`master`分支，可以使用：
+  
+     ```git
+     $ git switch master
+     ```
+  
   4. `git merge` 分支名   ----->   合并分支
+  
   5. `git branch -d` 分支名   ----->   删除分支
-  6. `git checkout -b` 分支名   ----->   创建并切换分支
-  7. `git merge --no--ff -m 备注 login`   ----->   准备合并login分支，禁用`Fast forward`
+  
+  6. `git branch -D <name>` 丢弃一个没有被合并过的分支，强行删除。
+  
+  7. `git checkout -b` 分支名   ----->   创建并切换分支
+  
+  8. `git merge --no--ff -m 备注 login`   ----->   准备合并login分支，禁用`Fast forward`
+  
+     + `Fast forward` 这种模式下，删除分支后，会丢掉分支信息
+  
+     + `--no-ff` 参数就可以用普通模式合并，合并后的历史有分支，能看出来曾经做过合并，而`fast forward`合并就看不出来曾经做过合并。
+  
+  9. `git branch --set-upstream-to <branch-name> origin/<branch-name>`
+  
+     创建本地分支和远程分支的链接关系
 + git 合并冲突
   1. 对于同一文件，如果有多个分支需要合并时，容易出现冲突
   2. 如出现冲突只能手动处理，再次提交。一般做法，把自己的代码放到冲突代码的后面即可。
