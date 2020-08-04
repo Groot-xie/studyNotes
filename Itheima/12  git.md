@@ -27,7 +27,7 @@
 
 
 
-# 二、git
+# 二、git 介绍
 
 + 定义：Git 是一款免费、开源的分布式版本控制系统，用于敏捷高效地处理任何或大或小的项目
 + 使用 git 的方式：
@@ -41,13 +41,13 @@
 
 # 三、git 命令
 
-> `git init`
+## 3.1 `git init`
 
 初始化一个 git 仓库，在当前项目下生成一个 git 文件夹
 
 
 
-> `git status`
+## 3.2 `git status`
 
 查看文件的状态：如果是红色，说明工作区有代码需要提交。如果是绿色，说明暂存区中的文件需要提交
 
@@ -67,7 +67,9 @@ git 仓库分区
 
 
 
-> `git add`  工作区 ---> 暂存区(Stage)
+## 3.3 `git add`
+
+>   工作区 ---> 暂存区(Stage)
 
 + 作用：将文件由 工作区 添加到 暂存区
 
@@ -82,7 +84,9 @@ git 仓库分区
 
 
 
-> `git commit`  暂存区 ---> 仓库区
+## 3.4 `git commit`
+
+>   暂存区 ---> 仓库区
 
 + 作用：将文件由 工作区 添加到 暂存区，生成版本号
 
@@ -107,15 +111,27 @@ git 仓库分区
 
 
 
-> `git log`
+## 3.5 `git log`
 
 + 作用：查看提交日志
+
 + 美化：`git log --pretty=oneline`
-+ `git reflog` 可以查看所有版本的信息操作
+
++ 示例
+
+  + `git log --oneline`
+
+  + `git log -n4 --oneline`
+
+    最近4条
+
+  + `git log --all graph`
+
+    图形化
 
 
 
-> `git relog`
+## 3.6 `git relog`
 
 + 用来记录你的每一次命令
 + 如果进行了版本回退，那么被回退的版本通过 `git log` 就找不到了，可以通过 `git relog` 查看版本号
@@ -124,7 +140,7 @@ git 仓库分区
 
 
 
-> `git stash`
+## 3.7 `git stash`
 
 + 作用：可以把当前工作现场“储藏”起来，等以后恢复现场后继续工作
 
@@ -135,9 +151,19 @@ git 仓库分区
 
 
 
-> `git cherry-pick`
+## 3.8 `git cherry-pick`
 
 + 作用：复制一个特定的提交到当前分支
+
+
+
+## 3.9 `git mv 旧名 新名`
+
++ 作用：文件重命名
+
+
+
+
 
 # 四、git 对比
 
@@ -146,6 +172,8 @@ git 仓库分区
 作用：可以查看每次提交内容的不同 
 
 + `git diff`
+
++ `git diff 文件名`
 
   查看工作区与暂存区的不同
 
@@ -167,6 +195,28 @@ git 仓库分区
 
 # 五、git 重置
 
+> 撤销修改
+
+- `git checkout -- 文件名`
+
+  <font color=red> 丢弃工作区的修改 </font>，让这个文件回到最近一次`git commit`或`git add`时的状态
+
+  `--` 很重要，没有它就变成了切换分支
+
+- `git reset HEAD 文件名`
+
+  <font color=red> 文件在暂存区 --->  工作区 </font>
+
+- `git reset --hard 版本号/head~数字`
+
+  退回之前版本(文件在仓库区)
+
+- `git rm 文件名`
+
+  删除文件
+
+
+
 > `git reset`
 
 + 作用：版本回退，将代码恢复到已经提交的某一个版本中
@@ -187,57 +237,37 @@ git 仓库分区
 
      ....
 
-> 撤销修改
-
-- `git checkout -- 文件名`
-
-  丢弃工作区的修改，让这个文件回到最近一次`git commit`或`git add`时的状态
-
-  `--` 很重要，没有它就变成了切换分支
-
-- `git reset HEAD 文件名`
-
-  文件在暂存区 --->  工作区
-
-- `git reset --hard 版本号/head~数字`
-
-  退回之前版本(文件在仓库区)
-
-- `git rm 文件名`
-
-  删除文件
 
 
 
-# 六、git 忽视文件
 
-+ 在仓库的根目录创建一个 `.gitignore` 的文件(文件名固定)
+# 六、git 标签管理
 
-+ 将不需要被 git 管理的文件路径添加到 `.gitignore`
+- 定义：git 标签为版本库的快照
 
-  \# 忽视 idea.txt 文件
+- 命令
 
-  idea.text
+  1. `git tag 标签名 [-m 备注]`
+
+  2. `git tag`
+
+     查看所有标签
+
+  3. `git tag 标签名 [-m 备注] 版本号`
+
+     给以前的版本打标签
+
+  4. `git show 标签名`
+
+     查看某个标签的信息
+
+  5. `git tag -d 标签名`
+
+     删除标签
 
   
 
-  \# 忽视 css 下的所有 js 文件
-
-  css/ *.js
-
   
-
-  \# 忽视 css 文件夹
-
-  css
-
-  
-
-  \# 忽视 css 下的所有文件
-
-  css/\*.*
-
-
 
 
 
@@ -296,86 +326,58 @@ git 仓库分区
 
 
 
-# 八、git 远程仓库( github )
-
-git 和 github 没哟直接的关系
-
-git是一个版本控制工具
-
-github 是一个代码托管平台，开源社区。是 git 的一个远程代码仓库
+# 八、gitk：图形界面工具查看版本历史
 
 
 
-+ github
 
-  1. 定义：是一个面向开源及私有软件项目的托管平台，因为只支持 git 作为唯一的版本库格式进行托管。故名：github
-  2. github 免费，代码所有人都可以看到，但只有自己可以修改。付费的可以隐藏
-  3. 创建 git 项目时，不能有中文
 
-+ 命令
+# 九、探秘
 
-  > `git clone`
+```git
+// 看类型 commit、tree、blob
+git cat-file -t 版本号
+// 看内容
+git cat-file -p 版本号
+```
 
-  + 作用：克隆远程仓库的代码到本地
 
-  + 命令：`git clone 远程仓库地址`
 
-    克隆时会自带 orgin 地址，指向 clone 下的地址
 
-    
 
-  > `git push`
+# 十、git 忽视文件
 
-  + 作用：将本地仓库中代码提交到远程仓库
+- 在仓库的根目录创建一个 `.gitignore` 的文件(文件名固定)
 
-  + 命令：
+- 将不需要被 git 管理的文件路径添加到 `.gitignore`
 
-    1. `git push 仓库地址 master`
+  \# 忽视 idea.txt 文件
 
-    2. `git push -u orgin master`
-
-       -u 表示可以默认使用，以后不加 orgin master
-
-       
-
-  > `git pull`
-
-  + 作用：将远程的代码下载到本地(更新)
-
-    
-
-  > `git remote`
-
-  + `git remote add 仓库别名 仓库地址`
-
-    给仓库地址添加别名
-
-  + `git remote remove` 别名
-
-    删除别名
-
-  + `git clone` 的仓库默认有一个 origin 的别名
-
-  + `git remote`
-
-    查看远程仓库的信息
-
-  + `git remote -v`
-
-    查看远程仓库更详细的信息
+  idea.text
 
   
 
-  > `git rebase`
+  \# 忽视 css 下的所有 js 文件
 
-  + 特点：将分支的提交历史整理成一条直线，直观
-  + 缺店：本地的分支提交已经被修改过
+  css/ *.js
+
+  
+
+  \# 忽视 css 文件夹
+
+  css
+
+  
+
+  \# 忽视 css 下的所有文件
+
+  css/\*.*
 
 
 
 
 
-# 九、git 配置全局用户名
+# 十一、git 配置全局用户名
 
 + 使用 `--global` 参数，配置全局的用户名和邮箱，只需配置一次即可。推荐配置 github 的用户名和密码
 
@@ -386,40 +388,107 @@ github 是一个代码托管平台，开源社区。是 git 的一个远程代�
 + 查看配置信息
 
   `git config --list`
+  
++ 几种 `--`
+
+  - `git config --local`
+
+    只对某个仓库有效（缺省等同于local）
+
+  - `git config --global` 
+
+    对当前用户的所有仓库有效
+
+  - `git config --system`
+
+    对系统所有登录的用户有效
+
++ 显示 config 的配置，加 `--list`
+
+  ```git
+  git config --list --local
+  git config --list --global
+  git config --list --system
+  ```
 
 
 
+# 十二、git 远程仓库( github )
 
+git 和 github 没有直接的关系，git是一个版本控制工具， github 是一个代码托管平台，开源社区。是 git 的一个远程代码仓库
 
-# 十、git 标签管理
+- github
 
-+ 定义：git 标签为版本库的快照
-
-+ 命令
-
-  1. `git tag 标签名 [-m 备注]`
-
-  2. `git tag`
-
-     查看所有标签
-
-  3. `git tag 标签名 [-m 备注] 版本号`
-
-     给以前的版本打标签
-
-  4. `git show 标签名`
-
-     查看某个标签的信息
-
-  5. `git tag -d 标签名`
-
-     删除标签
+  1. 定义：是一个面向开源及私有软件项目的托管平台，因为只支持 git 作为唯一的版本库格式进行托管。故名：github
+  2. github 免费，代码所有人都可以看到，但只有自己可以修改。付费的可以隐藏
+  3. 创建 git 项目时，不能有中文
 
   
 
+## 13.1 `git clone`
+
+- 作用：克隆远程仓库的代码到本地
+
+- 命令：`git clone 远程仓库地址`
+
+  克隆时会自带 orgin 地址，指向 clone 下的地址
+
   
 
-# 十一、SHH 免密登录
+## 13.2 `git push`
+
+- 作用：将本地仓库中代码提交到远程仓库
+
+- 命令：
+
+  1. `git push 仓库地址 master`
+
+  2. `git push -u orgin master`
+
+     -u 表示可以默认使用，以后不加 orgin master
+
+     
+
+## 13.3 `git pull`
+
+- 作用：将远程的代码下载到本地(更新)
+- `git fetch` + `git merge` = `git pull`
+
+
+
+## 13.4 `git remote`
+
+- `git remote add 仓库别名 仓库地址`
+
+  给仓库地址添加别名
+
+- `git remote remove` 别名
+
+  删除别名
+
+- `git clone` 的仓库默认有一个 origin 的别名
+
+- `git remote`
+
+  查看远程仓库的信息
+
+- `git remote -v`
+
+  查看远程仓库更详细的信息
+
+
+
+## 13.5 `git rebase`
+
+- 特点：将分支的提交历史整理成一条直线，直观
+- 缺店：本地的分支提交已经被修改过
+- `git rebase -i 要修改的父版本版本号` <font color=red> 交互式命令 </font>
+
+
+
+
+
+# 十三、SHH 免密登录
 
 + git 支持多种数据传输协议
 
@@ -443,4 +512,19 @@ github 是一个代码托管平台，开源社区。是 git 的一个远程代�
   6. 在 github 中新建仓库或使用现在仓库拿到 `git@github.com:用户名/仓库地址.git`
 
 
+
+
+
+# 十四、base 命令
+
+- `vi 文件名`  预览文件
+- `cp 文件路径 新文件名` 拷贝
+- `cd 文件路径` 切换目录
+- `pwd` 当前工作路径
+- `ls -al` 查看当前目录
+- `cat 文件` 输出文件内容
+- `wq!` w写入 q退出
+- `mkdir` 创建目录
+- `echo '文件内容' > 文件名` 创建文件
+- `mv 旧名 新名` 重命名
 
