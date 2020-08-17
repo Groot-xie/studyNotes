@@ -327,6 +327,8 @@ Block Formatting Context：页面上一个隔离的独立渲染区域
 
   C3 实现动画的 transform 变换只有一种视觉效果，所以通过 transform 位移或者变换只会触发重绘，不会触发回流(比position 为 absolute fixed 好)
 
++ 避免频繁操作 DOM，创建一个 documentFragment，在它上面应用所有 DOM 操作，最后把它添加到文档中
+
 + 完成功能是前提，在完成功能的情况下优化代码性能
 
 + 尽量不要将获取性操作放在 for 循环中( 重复渲染性能低下 )

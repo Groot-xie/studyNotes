@@ -115,11 +115,30 @@ DOM 中常见的概念
 
 ### 2.2 为同一元素绑多个相同事件
 
-+ `div.addEventListener(事件类型, 事件处理函数， Boolean值)` IE8 不支持
++ `div.addEventListener(事件类型, 事件处理函数， Boolean值 / 对象)` IE8 不支持
 
   + 参数1：事件类型(事件名字)没有on，例 click
+
   + 参数2：事件处理函数
-  + 参数3：布尔类型(目前只写 false)
+
+  + 参数3：默认 false，冒泡阶段。true 为捕获
+
+    + 布尔类型 capture 指定事件是否在捕获或者冒泡阶段执行
+
+    + 对象：
+
+      ```js
+      {
+          // capture 指定事件是否在捕获或者冒泡阶段执行
+          capture: true,
+          // 表示当前事件只执行一次
+          once: true,
+          // 表示listener永远不会调用prventDefault()，如果还是调用了会报错
+          passive: true
+      }
+      ```
+
+      
 
   ```js
   // 第一个
@@ -684,6 +703,30 @@ window.getComputedStyle(element, null).left
 // 谷歌火狐不支持
 element.currentStyle.left
 ```
+
++ `Element.getBoundingClientRect()` 方法返回元素的大小及其相对于视口的位置。
+
+  ```js
+  const child = document.getElementById('child')
+  child.getBoundingClientRect()
+  {
+      // 自身的宽高
+      width: 100,
+      height: 100,
+      left: 209, // 距离视口左边的位置
+      top: 209, // 距离视口右边的位置
+      right: 309,
+      bottom: 309,
+      x: 209,	// 相对于视口的坐标
+      y: 209,
+  }
+  ```
+
+   除了width 和 height 以外的属性是相对于视图窗口的左上角来计算的。
+
+  ![1597396924481](images/1597396924481.png)
+
+
 
 
 
