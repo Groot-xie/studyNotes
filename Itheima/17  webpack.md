@@ -35,7 +35,7 @@
 ## 二、webpack 和 模块
 
 + 在 webpack 看来，所有的静态资源都是模块
-+ webpack 模块能够识别一下等形式的模块之间的依赖
++ webpack 模块能够识别以下等形式的模块之间的依赖
   1. js 的模块规范
      + ES2015 ---> import / export
      + CommonJS ---> require() / module.exports
@@ -110,7 +110,7 @@
 
   3. 区别：代码是否压缩
 
-  4. 注意：在使用 webpack 命令时，应指定 node 配置。mode 的值可以是 development 或 production。如果没有指定默认是：production
+  4. 注意：在使用 webpack 命令时，应指定 mode 配置。mode 的值可以是 development 或 production。如果没有指定默认是：production
 
      配置：`webpack ./index.js --mode development`
 
