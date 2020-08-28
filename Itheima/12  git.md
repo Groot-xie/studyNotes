@@ -292,10 +292,14 @@ git 仓库分区
   5. `git tag -d 标签名`
 
      删除标签
-   
+  
   6. 将 tag 推送到远程仓库
 
      `git push orgin 标签名`
+     
+  7. 删除远程仓库 tag
+  
+     `git push origin :refs/tags/标签名`
   
   
   
