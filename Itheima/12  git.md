@@ -362,13 +362,69 @@ git 仓库分区
 
 
 
-# 八、gitk：图形界面工具查看版本历史
+# 八、submodule
+
++ 添加
+
+  ```git
+  git submodule add git@github.com:lib.git <local path>
+  ```
+
+  其中，`<local path>` 是你期望的目录名。
+
+  该命令实际会做三件事情：
+
+  1. clone `lib.git`到本地
+
+  2. 创建一个 `.gitsubmodule` 文件标记submodule的具体信息
+
+  3. 更新`.git/config`文件，增加submodule的地址：
+
+     ```git
+     [submodule "lib"]
+         url = git@github.com:lib.git
+     ```
+
++ 删除
+
+  首先，需要删除 `.git/config` 和 `.gitsubmodle` 文件里submodule相关的部分，然后执行：
+
+  ```git
+  git rm --cached <local path>
+  ```
+
++ 签处
+
+  如果要clone一个附带submodule的项目，submodule的文件不会自动随父项目clone出来（其实只会clone出 `.gitsubmodle` 这个描述文件），还需要执行如下命令取出submodule里的文件：
+
+  ```git
+  git submodule init
+  git submodule update
+  ```
+
+  或者，一条组合命令（同样适用于嵌套submodule的情况）:
+
+  ```git
+  git submodule update --init --recursive
+  ```
+
++ 修改/更新
+
+  如果 submodule 有更新，默认在本地父项目里执行 `git pull` 是不会更新 submodule 的。因为执行 `git submodule add xxx`的时候，只是把 submodule 的当前 commit id 加入到本地父项目的索引里，如果你期望 submodule 的 commit id 同步到最新HEAD，则你还需要重新执行 `git add` 然后重新提交。
+
+  此后，其他开发成员需要执行 `git submodule update` 更新你刚才的这个 submodule commit。这里一个需要注意的地方是，每次在父项目执行 `git pull` 后，应该执行 `git status` 查看一下 submodule 是否有更新；如果 submodule 有更新，则应该立刻执行 `git submodule update` ，否则你有可能把 submodule 的旧依赖提交到仓库里去。一个建议是，尽量不要执行 `git commit -a`，它会让你忽略对staged文件的确认过程。
+
+  
+
+
+
+# 九、gitk：图形界面工具查看版本历史
 
 
 
 
 
-# 九、探秘
+# 十、探秘
 
 ```git
 // 看类型 commit、tree、blob
@@ -381,7 +437,7 @@ git cat-file -p 版本号
 
 
 
-# 十、git 忽视文件
+# 十一、git 忽视文件
 
 - 在仓库的根目录创建一个 `.gitignore` 的文件(文件名固定)
 
@@ -413,7 +469,7 @@ git cat-file -p 版本号
 
 
 
-# 十一、git 配置全局用户名
+# 十二、git 配置全局用户名
 
 + 使用 `--global` 参数，配置全局的用户名和邮箱，只需配置一次即可。推荐配置 github 的用户名和密码
 
@@ -449,7 +505,7 @@ git cat-file -p 版本号
 
 
 
-# 十二、git 远程仓库( github )
+# 十三、git 远程仓库( github )
 
 git 和 github 没有直接的关系，git是一个版本控制工具， github 是一个代码托管平台，开源社区。是 git 的一个远程代码仓库
 
@@ -524,7 +580,7 @@ git 和 github 没有直接的关系，git是一个版本控制工具， github 
 
 
 
-# 十三、SHH 免密登录
+# 十四、SHH 免密登录
 
 + git 支持多种数据传输协议
 
@@ -551,7 +607,7 @@ git 和 github 没有直接的关系，git是一个版本控制工具， github 
 
 
 
-# 十四、base 命令
+# 十五、base 命令
 
 - `vi 文件名`  预览文件
 - `cp 文件路径 新文件名` 拷贝
