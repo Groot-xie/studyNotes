@@ -19,7 +19,9 @@ npm i ts-node -g
 ts-node index.ts
 ```
 
+监听
 
+`nodemon index.ts`
 
 
 
@@ -30,12 +32,52 @@ ts-node index.ts
 + 基础类型
 
   ```tsx
-  // 基础类型 null undefined symbol boolean void
+  // 基础类型 null undefined symbol boolean number void any
   const count: number = 123;
   const LeacherName: string = 'Dell'
   ```
 
+  + any
+
+    任意类型
+    
+  + void
+
+    某种程度上来说，`void` 类型像是与 `any `类型相反，<font color=red> 它表示没有任何类型 </font>。 当一个函数没有返回值时，你通常会见到其返回值类型是 `void`
+
+    声明一个`void`类型的变量没有什么大用，因为你只能为它赋予 `undefined` 和 `null`
+
+  + Undefind null
+
+    `undefined` 和 `null` 两者各自有自己的类型分别叫做 `undefined` 和 `null`。 和  `void` 相似，它们的本身的类型用处不是很大
+
+    + <font color=red> 默认情况下`null`和`undefined`是所有类型的子类型 </font>。 就是说你可以把  `null` 和 `undefined` 赋值给 `number` 类型的变量
+    + 然而，当你指定了<font color=red>  `--strictNullChecks` </font> 标记，`null` 和 `undefined` 只能赋值给 `void` 和它们各自
+
+  + never
+
+    `never` 类型<font color=red> 表示的是那些永不存在的值的类型 </font>。 
+
+    `never` 类型是任何类型的子类型，也可以赋值给任何类型；然而，没有类型是 `never` 的子类型或可以赋值给 `never` 类型（除了 `never` 本身之外）, 即使  `any` 也不可以赋值给 `never`。
+
+    ```js
+    // 返回never的函数必须存在无法达到的终点
+    function error(message: string): never {
+      throw new Error(message)
+    }
+    function loop(): never {
+      while(true) {}
+    }
+    
+    // 推断的返回值类型为never
+    function fail() {
+      return error('Something failed')
+    }
+    ```
+
 + 对象类型
+
+  `object` 表示<font color=red> 非原始类型 </font>，也就是除 `number`，`string`，`boolean`，`symbol`，`null` 或 `undefined` 之外的类型
 
   ```tsx
   // 对象类型-对象 {} class function []
@@ -66,7 +108,19 @@ ts-node index.ts
   const date: Date = new Date()
   ```
 
-## 2.2 类型注解
+## 2.2 类型断言
+
+当你在TypeScript里使用JSX时，只有 `as`语法断言是被允许的。
+
+```js
+// 尖括号 语法
+let someValue: any = 'this is a string'
+let strLength: number = (<string>someValue).length
+// as 语法
+let strLength2: number = (someValue as string).length
+```
+
+## 2.3 类型注解
 
 显示的告诉 typescript 变量的类型
 
@@ -74,7 +128,7 @@ ts-node index.ts
 let count: number
 ```
 
-## 2.3 类型推断
+## 2.4 类型推断
 
 ts 会自动分析变量类型
 
@@ -86,7 +140,7 @@ let abc = 123
 + ts 能够自动分析变量类型，我们就不需要显示的声明
 + ts无法分析变量类型，需要使用类型注解
 
-## 2.4 函数类型注解
+## 2.5 函数类型注解
 
 ```tsx
 function add (first: number, second: number): number {
@@ -106,39 +160,68 @@ function add1({ first, second }: { first: number, second: number }): number {
 }
 ```
 
-## 2.5 数组和元组的类型注解
+## 2.6 数组和元组的类型注解
 
-```tsx
-// 数组的类型注解
-const arr: (number | string)[] = [1, '2', 3]
-const stringArr: string[] = ['a', 'b', 'c']
-const undefinedArr: undefined[] = [undefined]
-// 数组的每一项是一个对象，并且包含固定属性
-const objArr: {name: string, age: number}[] = [{
-    name: 'xxh',
-    age: 28
-}]
++ 数组的类型注解
 
+  ```js
+  const arr: (number | string)[] = [1, '2', 3]
+  const stringArr: string[] = ['a', 'b', 'c']
+  const undefinedArr: undefined[] = [undefined]
+  // 数组的每一项是一个对象，并且包含固定属性
+  const objArr: {name: string, age: number}[] = [{
+      name: 'xxh',
+      age: 28
+  }]
+  ```
 
-// 如果对象的属性多了以后，可读性很差，使用类型别名 type
-// type alias
-type User = {
-    name: string,
-    age: number
-}
-const objArr1: User[] = [{
-    name: 'xxh',
-    age: 28
-}]
++ 数组泛型，Array\<T>
 
-// 元组 tuple
-// 场景：数组长度固定，并且每一项的类型也固定
-const teacherInfo: [string, string, number] = ['xxh', 'male', 18]
-const teacherList: [string, string, number][] = [
-    ['xxh', '男', 27],
-    ['zwh', '女', 20]
-]
-```
+  ```js
+  // 数组泛型，Array<元素类型>
+  let list = Array<number> = [1, 2, 3]
+  ```
+
++ ReadonlyArray\<T>类型
+
+  `ReadonlyArray\<T>` 类型，它与 `Array\<T>` 相似，只是把所有可变方法去掉了，因此可以确保数组创建后再也不能被修改
+
+  ```js
+  let a: number[] = [1, 2, 3, 4]
+  let ro: ReadonlyArray<number> = a
+  // ro[0] = 2 // error
+  // ro.push(5) // error
+  // ro.length = 100 // error
+  // a = ro // error
+  // 就算把整个ReadonlyArray赋值到一个普通数组也是不可以的。 但是你可以用类型断言重写：
+  a = ro as number[]
+  ```
+
++ 类型别名 type
+
+  ```js
+  // 如果对象的属性多了以后，可读性很差，使用类型别名 type
+  // type alias
+  type User = {
+      name: string,
+      age: number
+  }
+  const objArr1: User[] = [{
+      name: 'xxh',
+      age: 28
+  }]
+  ```
+
++ 元组 tuple
+
+  ```js
+  // 场景：数组长度固定，并且每一项的类型也固定
+  const teacherInfo: [string, string, number] = ['xxh', 'male', 18]
+  const teacherList: [string, string, number][] = [
+      ['xxh', '男', 27],
+      ['zwh', '女', 20]
+  ]
+  ```
 
 
 
@@ -178,7 +261,7 @@ const teacherList: [string, string, number][] = [
       name: string; // 必有属性
       age?: number; // 可选属性
       readonly abc: string; // 只读, 不可修改
-      [propName: string]: any; // 属性名为字符串,值任意,兼容不确定属性
+      [propName: string]: any; // 索引签名(字符串/数字)：属性名为字符串,值任意,兼容不确定属性
       say(): string; // say方法,返回值为string类型
   }
   ```
@@ -187,9 +270,10 @@ const teacherList: [string, string, number][] = [
 
   ```tsx
   interface SayHi {
-      (word: string): string
+    // (参数): 返回值
+    (word: string, num: number): string
   }
-  
+  // 函数的参数名不需要与接口里定义的名字相匹配
   const say: SayHi = (text) => {
       return text
   }
