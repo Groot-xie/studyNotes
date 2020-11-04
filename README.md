@@ -3,7 +3,7 @@
 ### 介绍
 
 + 远程仓库：
-  + https://github.com/xieoxiaohua170520/studyNotes
+  + https://github.com/Groot-xie/studyNotes
   + https://gitee.com/xiexiaohua/my_notes
 + 提交需要同时提交到github和码云
 
