@@ -414,6 +414,8 @@ getPersonName({
 
 + `readonly`
 
+  只读属性必须在声明时或构造函数里被初始化
+  
   ```ts
   class Person {
       public readonly name: string
@@ -547,6 +549,23 @@ class Triangle extends Geom {
     }
 }
 
+```
+
+## 4.6 把类当做接口使用
+
+类定义会创建两个东西：类的实例类型和一个构造函数。 因为类可以创建出类型，所以你能够在允许使用接口的地方使用类
+
+```tsx
+class Point {
+    x: number;
+    y: number;
+}
+
+interface Point3d extends Point {
+    z: number;
+}
+
+let point3d: Point3d = {x: 1, y: 2, z: 3};
 ```
 
 
@@ -840,8 +859,19 @@ function addSecond1(first: object | NumberObj, second: object | NumberObj) {
   getResult(0) // offline
   getResult(1) // online
   ```
+  
++ 常量枚举
 
+  为了避免在额外生成的代码上的开销和额外的非直接的对枚举成员的访问( console.log(枚举) )。 常量枚举通过在枚举上使用 `const`修饰符来定义
 
+  ```tsx
+  const enum Enum {
+      A = 1,
+      B = A * 2
+  }
+  ```
+
+  
 
 
 
